@@ -1,41 +1,64 @@
-
+(* 
+  Tipos -> simplemente vars
+*)
 type term =
     TmVar of string
   | TmAbs of string * term
   | TmApp of term * term
 ;;
 
+(* 
+  Simple Printer
+*)
 let rec string_of_term tm = match tm with
     TmVar s -> s
   | TmAbs (s, t) -> "(lambda " ^ s ^ ". " ^ string_of_term t ^ ")"
   | TmApp (t1, t2) -> "(" ^ string_of_term t1 ^ " " ^ string_of_term t2 ^ ")"
 ;;
 
+(****************************************************************************)
+
+(* l1 - l2 (listas) *)
 let rec ldif l1 l2 = match l1 with
     [] -> []
   | h::t -> if List.mem h l2 then ldif t l2 else h::(ldif t l2)
 ;;
 
+(* l1 u l2 (listas) *)
 let rec lunion l1 l2 = match l1 with
     [] -> l2
   | h::t -> if List.mem h l2 then lunion t l2 else h::(lunion t l2)
 ;;
 
+(*
+  Calcular vars libres ->   
+    - caso base Var
+    - casos no triviales: aplicaciones/abstracciones
+*)
 let rec free_vars tm = match tm with
     TmVar s -> [s]
   | TmAbs (s, t) -> ldif (free_vars t) [s]
   | TmApp (t1, t2) -> lunion (free_vars t1) (free_vars t2)
 ;;
 
+(*
+  te añade comillas al nombre hasta que no esté en la lista -> nombre bien nuevo y fresco :)
+*)
 let rec fresh_name x l =
   if not (List.mem x l) then x else fresh_name (x ^ "'") l
 ;;
  
+(*
+  substituir -> 
+    - vars: caso base (si y==x se cambia)
+    - apps: caso recursivo
+    - abs:  caso especial: *explicarlo sencillamente*    
+*)
 let rec subst x s tm = match tm with
     TmVar y ->
       if y = x then s else tm
   | TmAbs (y, t) -> 
-      if y = x then tm
+      if y = x then tm                       
       else let fvs = free_vars s in
            if not (List.mem y fvs)
            then TmAbs (y, subst x s t)
@@ -73,6 +96,9 @@ let rec eval1 tm = match tm with
       raise NoRuleApplies
 ;;
 
+(*
+  eval ->
+*)
 let rec eval tm =
   try
     let tm' = eval1 tm in
@@ -80,4 +106,6 @@ let rec eval tm =
   with
     NoRuleApplies -> tm
   ;;
+
+(****************************************************************************)
 
