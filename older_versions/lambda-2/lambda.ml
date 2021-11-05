@@ -1,4 +1,6 @@
+(***********************************TIPOS***********************************)
 
+(*Types*)
 type term =
     TmTrue
   | TmFalse
@@ -12,6 +14,7 @@ type term =
   | TmApp of term * term
 ;;
 
+(*To String*)
 let rec string_of_term = function
     TmTrue ->
       "true"
@@ -41,16 +44,22 @@ let rec string_of_term = function
       "(" ^ string_of_term t1 ^ " " ^ string_of_term t2 ^ ")"
 ;;
 
+(***********************************/TIPOS***********************************)
+(***********************************EVAL***********************************)
+
+(* l1 - l2 (listas) *)
 let rec ldif l1 l2 = match l1 with
     [] -> []
   | h::t -> if List.mem h l2 then ldif t l2 else h::(ldif t l2)
 ;;
 
+(* l1 u l2 (listas) *)
 let rec lunion l1 l2 = match l1 with
     [] -> l2
   | h::t -> if List.mem h l2 then lunion t l2 else h::(lunion t l2)
 ;;
 
+(*Calcular vars libres *)
 let rec free_vars tm = match tm with
     TmTrue ->
       []
@@ -74,10 +83,25 @@ let rec free_vars tm = match tm with
       lunion (free_vars t1) (free_vars t2)
 ;;
 
+(*
+  te añade comillas al nombre hasta que no esté en la lista -> nombre bien nuevo y fresco :)
+*)
 let rec fresh_name x l =
   if not (List.mem x l) then x else fresh_name (x ^ "'") l
 ;;
     
+
+(*
+  substituir -> 
+    - vars:                     caso base (si y==x se cambia)
+    - true/false/zero:          caso base
+    - apps,if,succ,pred.iszero: caso recursivo
+    - abs:                      caso especial: 
+                                  -si (x==y)            -> se deja como está
+                                  -si (y no es fv de s) -> se aplica proceso rec
+                                  -si (y es fv de s)    -> se genera un nuevo nombre para la abstracción y se continua el proceso recursivo
+
+*)
 let rec subst x s tm = match tm with
     TmTrue ->
       TmTrue
@@ -123,6 +147,7 @@ let rec isval tm = match tm with
 exception NoRuleApplies
 ;;
 
+(* como evaluar *)
 let rec eval1 tm = match tm with
     (* E-IfTrue *)
     TmIf (TmTrue, t2, _) ->
@@ -186,6 +211,7 @@ let rec eval1 tm = match tm with
       raise NoRuleApplies
 ;;
 
+(* evalua hasta que no pueda evaluar nada más *)
 let rec eval tm =
   try
     let tm' = eval1 tm in
@@ -193,6 +219,9 @@ let rec eval tm =
   with
     NoRuleApplies -> tm
 ;;
+
+(***********************************/EVAL***********************************)
+
 
 (*
 

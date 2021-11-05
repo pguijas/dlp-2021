@@ -6,6 +6,7 @@ open Lambda;;
 open Parser;;
 open Lexer;;
 
+(*Dado un input, lo parsea, lo evalua y printa su resultado*)
 let top_level_loop () =
   print_endline "Evaluator of lambda expressions...";
   let rec loop () =

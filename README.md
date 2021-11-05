@@ -11,4 +11,5 @@ Cosas que hacer:
 
 Dudas:
 
-* aplicación de t1 t2 sinedo var1 var2 es válido? pa k sirve xd
+* que es el __s__ token -> en funcs del lexer/parser me pierdo algo
+* Investigar funcionamiento lexer/parser
