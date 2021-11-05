@@ -16,7 +16,7 @@ let rec string_of_term tm = match tm with
   | TmApp (t1, t2) -> "(" ^ string_of_term t1 ^ " " ^ string_of_term t2 ^ ")"
 ;;
 
-(****************************************************************************)
+(***********************************EVAL***********************************)
 
 (* l1 - l2 (listas) *)
 let rec ldif l1 l2 = match l1 with
@@ -52,7 +52,10 @@ let rec fresh_name x l =
   substituir -> 
     - vars: caso base (si y==x se cambia)
     - apps: caso recursivo
-    - abs:  caso especial: *explicarlo sencillamente*    
+    - abs:  caso especial: 
+                  -si (x==y)            -> se deja como está
+                  -si (y no es fv de s) -> se aplica proceso rec
+                  -si (y es fv de s)    -> se genera un nuevo nombre para la abstracción y se continua el proceso recursivo
 *)
 let rec subst x s tm = match tm with
     TmVar y ->
@@ -68,6 +71,7 @@ let rec subst x s tm = match tm with
       TmApp (subst x s t1, subst x s t2)
 ;;
 
+(*abs y vars son valores*)
 let isval tm = match tm with
     TmVar _ -> true
   | TmAbs _ -> true
@@ -77,6 +81,7 @@ let isval tm = match tm with
 exception NoRuleApplies
 ;;
 
+(* como evaluar -> resolver abstracciones, 1º fun, 2º arg *)
 let rec eval1 tm = match tm with
     (* E-AppAbs *)
     TmApp (TmAbs (x, t12), v2) when isval v2 ->
@@ -96,9 +101,7 @@ let rec eval1 tm = match tm with
       raise NoRuleApplies
 ;;
 
-(*
-  eval ->
-*)
+(* evalua hasta que no pueda evaluar nada más*)
 let rec eval tm =
   try
     let tm' = eval1 tm in
@@ -107,5 +110,7 @@ let rec eval tm =
     NoRuleApplies -> tm
   ;;
 
-(****************************************************************************)
+  
+(***********************************EVAL***********************************)
+
 
