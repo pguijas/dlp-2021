@@ -1,16 +1,27 @@
+(* 
+  Recuerden Traducir todo caballeros.
 
-(* TYPE DEFINITIONS *)
+  Dudas:
+    isval -> y el tmvar?? (me acaba de rallar que flipas) 
+              -> realmente lo que buscamos es cambiar las vars por valores pero porque en la 1º si que lo consideran como valor?? bu me he liao
 
+
+*)
+
+(***********************************TYPES***********************************)
+(* Base Types *)
 type ty =
     TyBool
   | TyNat
   | TyArr of ty * ty
 ;;
 
+(* Contexto es una lista de correspondencias entre variables libres y su tipo *)
 type context =
   (string * ty) list
 ;;
 
+(* Términos *)
 type term =
     TmTrue
   | TmFalse
@@ -26,35 +37,28 @@ type term =
 ;;
 
 
-(* CONTEXT MANAGEMENT *)
-
+(*******************************CONTEXT MANAGEMENT*******************************)
+(* Creates an empty context *)
 let emptyctx =
   []
 ;;
 
+(* Adds binding to a given context *)
 let addbinding ctx x bind =
   (x, bind) :: ctx
 ;;
 
+(* Gets binding to a given context *)
 let getbinding ctx x =
   List.assoc x ctx
 ;;
 
-
-(* TYPE MANAGEMENT (TYPING) *)
-
-let rec string_of_ty ty = match ty with
-    TyBool ->
-      "Bool"
-  | TyNat ->
-      "Nat"
-  | TyArr (ty1, ty2) ->
-      "(" ^ string_of_ty ty1 ^ ")" ^ " -> " ^ "(" ^ string_of_ty ty2 ^ ")"
-;;
+(*******************************TYPE MANAGEMENT (TYPING)*******************************)
 
 exception Type_error of string
 ;;
 
+(* Given a context and a term we find its type (Inversion Lema) *)
 let rec typeof ctx tm = match tm with
     (* T-True *)
     TmTrue ->
@@ -121,7 +125,16 @@ let rec typeof ctx tm = match tm with
 ;;
 
 
-(* TERMS MANAGEMENT (EVALUATION) *)
+(******************************* Printing *******************************)
+
+let rec string_of_ty ty = match ty with
+    TyBool ->
+      "Bool"
+  | TyNat ->
+      "Nat"
+  | TyArr (ty1, ty2) ->
+      "(" ^ string_of_ty ty1 ^ ")" ^ " -> " ^ "(" ^ string_of_ty ty2 ^ ")"
+;;
 
 let rec string_of_term = function
     TmTrue ->
@@ -154,16 +167,21 @@ let rec string_of_term = function
       "let " ^ s ^ " = " ^ string_of_term t1 ^ " in " ^ string_of_term t2
 ;;
 
+(*********************************** EVAL ***********************************)
+
+(* l1 - l2 (listas) *)
 let rec ldif l1 l2 = match l1 with
     [] -> []
   | h::t -> if List.mem h l2 then ldif t l2 else h::(ldif t l2)
 ;;
 
+(* l1 u l2 (listas) *)
 let rec lunion l1 l2 = match l1 with
     [] -> l2
   | h::t -> if List.mem h l2 then lunion t l2 else h::(lunion t l2)
 ;;
 
+(*Calcular vars libres *)
 let rec free_vars tm = match tm with
     TmTrue ->
       []
@@ -189,10 +207,26 @@ let rec free_vars tm = match tm with
       lunion (ldif (free_vars t2) [s]) (free_vars t1)
 ;;
 
+(*
+  if the name is inside the list gens a new name 
+    -> Lo usamos en la substitución de las abstracciones, 
+       cuando substituimos por un término el cual tiene libre justo la var que fija la abstraccion
+*)
 let rec fresh_name x l =
   if not (List.mem x l) then x else fresh_name (x ^ "'") l
 ;;
     
+(*
+  substituir -> 
+    - vars:                     caso base (si y==x se cambia)
+    - true/false/zero:          caso base
+    - apps,if,succ,pred.iszero: caso recursivo
+    - abs,letin:                caso especial: 
+                                  -si (x==y)            -> se deja como está
+                                  -si (y no es fv de s) -> se aplica proceso rec
+                                  -si (y es fv de s)    -> se genera un nuevo nombre para la abstracción y se continua el proceso recursivo
+
+*)
 let rec subst x s tm = match tm with
     TmTrue ->
       TmTrue
@@ -234,6 +268,7 @@ let rec isnumericval tm = match tm with
   | _ -> false
 ;;
 
+(*tmvar no es un valor??? valores*)
 let rec isval tm = match tm with
     TmTrue  -> true
   | TmFalse -> true
@@ -245,6 +280,7 @@ let rec isval tm = match tm with
 exception NoRuleApplies
 ;;
 
+(* Evaluamos *)
 let rec eval1 tm = match tm with
     (* E-IfTrue *)
     TmIf (TmTrue, t2, _) ->
@@ -317,6 +353,7 @@ let rec eval1 tm = match tm with
       raise NoRuleApplies
 ;;
 
+(* Evaluate until no more terms can be evaluated *)
 let rec eval tm =
   try
     let tm' = eval1 tm in

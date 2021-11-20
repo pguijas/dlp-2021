@@ -1,23 +1,17 @@
-(***********************************TIPOS***********************************)
-(* 
-  Tipos -> simplemente vars
-*)
+(*Types*)
 type term =
     TmVar of string
   | TmAbs of string * term
   | TmApp of term * term
 ;;
 
-(* 
-  Simple Printer
-*)
+(*To String*)
 let rec string_of_term tm = match tm with
     TmVar s -> s
   | TmAbs (s, t) -> "(lambda " ^ s ^ ". " ^ string_of_term t ^ ")"
   | TmApp (t1, t2) -> "(" ^ string_of_term t1 ^ " " ^ string_of_term t2 ^ ")"
 ;;
 
-(***********************************/TIPOS***********************************)
 (***********************************EVAL***********************************)
 
 (* l1 - l2 (listas) *)
@@ -103,7 +97,7 @@ let rec eval1 tm = match tm with
       raise NoRuleApplies
 ;;
 
-(* evalua hasta que no pueda evaluar nada más*)
+(* evalua hasta que no pueda evaluar nada más *)
 let rec eval tm =
   try
     let tm' = eval1 tm in
@@ -111,8 +105,5 @@ let rec eval tm =
   with
     NoRuleApplies -> tm
   ;;
-
-
-(***********************************/EVAL***********************************)
 
 
