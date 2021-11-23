@@ -23,6 +23,6 @@ Opcionales:
 
 Dudas:
 
-* contexto funcional -> graña aydame cielo
+* contexto funcional ->  basicamente el problema es cuando tienes una abstraccion sin evaluar, como no se va a aplicar la var al contexto y deberia fijarse al valor de la var al contexto en ese momento de ejecución vamos a tener que comernos luego el término para fijar lo libre.
 * no me funciona algo del rollo L x.x -> hay que especificarle el tipo wtf
 * que es el __s__ token -> en funcs del lexer/parser me pierdo algo
