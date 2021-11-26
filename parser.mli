@@ -19,6 +19,9 @@ type token =
   | EQ
   | COLON
   | ARROW
+  | LBRACKET
+  | COMMA
+  | RBRACKET
   | EOF
   | INTV of (int)
   | STRINGV of (string)

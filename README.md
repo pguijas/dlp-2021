@@ -8,7 +8,7 @@ Obligatorios (5 ptos +1 si ingles):
 * Incorporación de un punto fijo interno para declarar definiciones recursivas directas (jodido)
 * Incorporación de un contexto en la terminal -> contexto funcional (jodido)
 * Incorporación del tipo string
-* Incorporación de pares: Incorporar a la gram., añadir TmPair en tipos y completar pattern-matching y reglas eval y tipado.
+* Incorporación de pares: Incorporar a la gram.(ok), añadir TmPair en tipos y completar pattern-matching y reglas eval y tipado.
 * Memoria
 
 Opcionales:

@@ -24,6 +24,9 @@
 %token EQ
 %token COLON
 %token ARROW
+%token LBRACKET
+%token COMMA
+%token RBRACKET
 %token EOF
 
 %token <int> INTV
@@ -61,6 +64,8 @@ appTerm :
       { TmIsZero $2 }
   | appTerm atomicTerm
       { TmApp ($1, $2) }
+  | LBRACKET atomicTerm COMMA atomicTerm RBRACKET
+      { print_endline "Reconocido."; TmIsZero $2 (* esto es pa que no casque error al compilar *) }
 
 atomicTerm :
     LPAREN term RPAREN
