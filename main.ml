@@ -7,6 +7,7 @@ open Parser;;
 open Lexer;;
 
 (* Esta funcion tragará hasta ;; *)
+(*
 let get_exp s = 
   let in_s = read_line () in
   try 
@@ -17,6 +18,7 @@ let get_exp s =
 
 
   String.index "abc;" ';';;
+*)
 
 (*Dado un input, lo parsea, lo evalua y printa su resultado*)
 let top_level_loop () =
