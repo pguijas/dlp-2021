@@ -64,8 +64,8 @@ appTerm :
       { TmIsZero $2 }
   | appTerm atomicTerm
       { TmApp ($1, $2) }
-  | LBRACKET atomicTerm COMMA atomicTerm RBRACKET
-      { print_endline "Reconocido."; TmIsZero $2 (* esto es pa que no casque error al compilar *) }
+  | LBRACKET appTerm COMMA appTerm RBRACKET
+      { TmPair ($2, $4) }
 
 atomicTerm :
     LPAREN term RPAREN

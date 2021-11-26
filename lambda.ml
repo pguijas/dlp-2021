@@ -14,6 +14,7 @@ type ty =
     TyBool
   | TyNat
   | TyArr of ty * ty (* arrow type *)
+  | TyPair of ty * ty
 ;;
 
 (* Contexto es una lista de correspondencias entre variables libres y su tipo *)
@@ -35,6 +36,9 @@ type term =
   | TmApp of term * term
   | TmLetIn of string * term * term
   | TmFix of term
+  | TmPair of term * term
+  | TmProj1 of term * term
+  | TmProj2 of term * term
 ;;
 
 
@@ -133,6 +137,22 @@ let rec typeof ctx tm = match tm with
           else raise (Type_error "result of body not compatible wirh domain")
         | _ -> raise (Type_error "arrow type excepted")
       )
+  (* T-Pair *)
+  | TmPair (t1, t2) ->
+      (* ctx |- {t1,t2} : T1 X T2 *)
+      let tyT1 = typeof ctx t1 
+      and tyT2 = typeof ctx t2 in
+      TyPair(tyT1, tyT2)
+
+  (* T-Proj1 *)
+  | TmProj1 (t1, t2) ->
+      (* ctx |- P.1 : T1 *)
+      typeof ctx t1
+
+  (* T-Proj2 *)
+  | TmProj2 (t1, t2) ->
+      (* ctx |- P.2 : T2 *)
+      typeof ctx t2
 
 ;;
 
@@ -146,6 +166,8 @@ let rec string_of_ty ty = match ty with
       "Nat"
   | TyArr (ty1, ty2) ->
       "(" ^ string_of_ty ty1 ^ ")" ^ " -> " ^ "(" ^ string_of_ty ty2 ^ ")"
+  | TyPair (ty1, ty2) ->
+      "{ " ^ string_of_ty ty1 ^ " , " ^ string_of_ty ty2 ^ "}"
 ;;
 
 let rec string_of_term = function
@@ -179,6 +201,12 @@ let rec string_of_term = function
       "let " ^ s ^ " = " ^ string_of_term t1 ^ " in " ^ string_of_term t2
   | TmFix (t) ->
       "(fix " ^ string_of_term t ^ ")"
+  | TmPair (t1, t2) ->
+      "{" ^ string_of_term t1 ^ " , " ^ string_of_term t2 ^ "}"
+  | TmProj1 (t1, t2) ->
+      string_of_term (TmProj1 (t1, t2)) ^ ".1 = " ^ string_of_term t1
+  | TmProj2 (t1, t2) ->
+      string_of_term (TmProj1 (t1, t2)) ^ ".2 = " ^ string_of_term t2
 ;;
 
 (*********************************** EVAL ***********************************)
@@ -221,6 +249,13 @@ let rec free_vars tm = match tm with
       lunion (ldif (free_vars t2) [s]) (free_vars t1)
   | TmFix t ->
       free_vars t
+  (* TODO: revisar *)
+  | TmPair (t1, t2) ->
+      lunion (free_vars t1) (free_vars t2)
+  | TmProj1 (t1, t2) ->
+      free_vars t1
+  | TmProj2 (t1, t2) ->
+      free_vars t2
 
 ;;
 
@@ -279,6 +314,13 @@ let rec subst x s tm = match tm with
                 TmLetIn (z, subst x s t1, subst x s (subst y (TmVar z) t2))
   | TmFix t -> 
       TmFix (subst x s t)
+  (* TODO: revisar *)
+  | TmPair (t1, t2) ->
+      TmPair ((subst x s t1), (subst x s t2))
+  | TmProj1 (t1, t2) ->
+      subst x s t1
+  | TmProj2 (t1, t2) ->
+      subst x s t2
 ;;
 
 let rec isnumericval tm = match tm with
@@ -376,6 +418,18 @@ let rec eval1 tm = match tm with
   | TmFix t1 ->
       let t1' = eval1 t1 in
       TmFix t1'
+
+  (* TODO: revisar esto tb :') *)
+  (* E-PairBeta1 *)
+  | TmProj1 (t1, t2) -> eval1 t1
+
+  (* E-PairBeta2 *)
+  | TmProj2 (t1, t2) -> eval1 t2
+  
+  (* E-Proj1 *)
+  (* E-Proj2 *)
+  (* E-Pair1 *)
+  (* E-Pair2 *)
 
   | _ ->
       raise NoRuleApplies
