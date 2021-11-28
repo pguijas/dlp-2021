@@ -6,6 +6,10 @@ open Lambda;;
 open Parser;;
 open Lexer;;
 
+(* 
+  que utilidad tiene que el contexto este fijado en el bucle si siempre es el mismo
+*)
+
 (* Esta funcion tragará hasta ;; *)
 
 exception Not_Ending;;
@@ -28,9 +32,12 @@ let rec get_exp s =
 let rec exec exp ctx = match exp with
   | [] -> ()
   | h::t -> 
-      let tm = s token (from_string (h)) in
+      let name,tm = s token (from_string (h)) in
       let tyTm = typeof ctx tm in
-      print_endline (string_of_term (eval tm) ^ " : " ^ string_of_ty tyTm);
+      match name with
+        | "" -> print_endline ("- : " ^ string_of_ty tyTm ^ " = " ^ string_of_term (eval tm));
+        | _ -> print_endline ("val " ^ name ^ " : " ^ string_of_ty tyTm ^ " = " ^ string_of_term (eval tm) );
+      
       exec t ctx
 ;;
 

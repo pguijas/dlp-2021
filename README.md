@@ -21,6 +21,9 @@ Opcionales:
 * (1.00) listas
 * (2.00) subtipado
 
+TODO
+
+* Esciribir en el fichero examples.txt -> ejemplos adicionales que involucren doble recursividad a partir de la suma (Fibonacci)
 Dudas:
 
 * contexto funcional ->  basicamente el problema es cuando tienes una abstraccion sin evaluar, como no se va a aplicar la var al contexto y deberia fijarse al valor de la var al contexto en ese momento de ejecución vamos a tener que comernos luego el término para fijar lo libre.

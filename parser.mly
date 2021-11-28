@@ -33,13 +33,17 @@
 %token <string> STRINGV
 
 %start s
-%type <Lambda.term> s
+%type <string * Lambda.term> s
+%type <Lambda.term> term
 
 %%
 
 s :
     term EOF
-      { $1 }
+      { "",$1 }
+    | STRINGV EQ term
+      { $1,$3 }
+      
 
 term :
     appTerm
@@ -52,6 +56,7 @@ term :
       { TmLetIn ($2, $4, $6) }
   | LETREC STRINGV COLON ty EQ term IN term
       { TmLetIn ($2, TmFix (TmAbs ($2,$4,$6)), $8) }
+
 
 appTerm :
     atomicTerm
