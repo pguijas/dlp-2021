@@ -439,7 +439,8 @@ let rec eval1 tm = match tm with
 let rec eval tm =
   try
     let tm' = eval1 tm in
-    eval tm'
+      print_endline ("\t" ^ string_of_term (tm') ^ " : (falta meter el tipo)");
+      eval tm'
   with
     NoRuleApplies -> tm
 ;;

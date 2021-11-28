@@ -4,8 +4,8 @@
 
 Obligatorios (5 ptos +1 si ingles):
 
-* Reconocimiento de expresiones multi-línea
-* Incorporación de un punto fijo interno para declarar definiciones recursivas directas (jodido)
+* (Listo) Reconocimiento de expresiones multi-línea
+* (Listo) Incorporación de un punto fijo interno para declarar definiciones recursivas directas
 * Incorporación de un contexto en la terminal -> contexto funcional (jodido)
 * Incorporación del tipo string
 * Incorporación de pares: Incorporar a la gram.(ok), añadir TmPair en tipos y completar pattern-matching y reglas eval y tipado.
