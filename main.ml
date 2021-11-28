@@ -7,18 +7,32 @@ open Parser;;
 open Lexer;;
 
 (* Esta funcion tragará hasta ;; *)
-(*
-let get_exp s = 
-  let in_s = read_line () in
+
+exception Not_Ending;;
+
+let rec check_exp l p = match l with
+  | ""::[]    -> raise (Not_Ending) (* when the expresion ends with ; (not ;;)*)
+  | []        -> raise (Not_Ending)
+  | ""::t     -> List.rev p
+  | h::t      -> check_exp t (h::p)
+;;
+
+let rec get_exp s = 
   try 
-    let pos = String.index in_s ';' 
-  
+    check_exp (String.split_on_char ';' s) []
   with 
-    Not_found -> get_exp (s^" "in_s)
+    Not_Ending -> get_exp (s^" "^(read_line ()))
+;;
 
-
-  String.index "abc;" ';';;
-*)
+(* Tokenizing and evaluating a list of expresions... (redactar molon) *)
+let rec exec exp ctx = match exp with
+  | [] -> ()
+  | h::t -> 
+      let tm = s token (from_string (h)) in
+      let tyTm = typeof ctx tm in
+      print_endline (string_of_term (eval tm) ^ " : " ^ string_of_ty tyTm);
+      exec t ctx
+;;
 
 (*Dado un input, lo parsea, lo evalua y printa su resultado*)
 let top_level_loop () =
@@ -27,9 +41,8 @@ let top_level_loop () =
     print_string ">> ";
     flush stdout;
     try
-      let tm = s token (from_string (read_line ())) in
-      let tyTm = typeof ctx tm in
-      print_endline (string_of_term (eval tm) ^ " : " ^ string_of_ty tyTm);
+      (* De momento el contexto no lo tocamos, en caunto se pueda actualizar ojocuidao -> vamos a tener que ir actualizandolo x instuccion *)
+      exec (get_exp (read_line ())) ctx;
       loop ctx
     with
        Lexical_error ->
