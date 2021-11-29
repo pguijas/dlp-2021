@@ -32,11 +32,9 @@ let rec get_exp s =
 let rec exec exp ctx = match exp with
   | [] -> ()
   | h::t -> 
-      let name,tm = s token (from_string (h)) in
-      let tyTm = typeof ctx tm in
-      match name with
-        | "" -> print_endline ("- : " ^ string_of_ty tyTm ^ " = " ^ string_of_term (eval tm));
-        | _ -> print_endline ("val " ^ name ^ " : " ^ string_of_ty tyTm ^ " = " ^ string_of_term (eval tm) );
+      match s token (from_string (h)) with
+        | Eval tm  -> print_endline ("- : " ^ (string_of_ty (typeof ctx tm)) ^ " = " ^ string_of_term (eval tm));
+        | Bind (name,tm) -> print_endline ("val " ^ name ^ " : " ^ (string_of_ty (typeof ctx tm)) ^ " = " ^ string_of_term (eval tm) );
       ;
       exec t ctx
 ;;

@@ -231,17 +231,17 @@ let yyact = [|
     let _1 = (Parsing.peek_val __caml_parser_env 1 : Lambda.term) in
     Obj.repr(
 # 43 "parser.mly"
-      ( "",_1 )
+        ( Eval _1 )
 # 236 "parser.ml"
-               : string * Lambda.term))
+               : Lambda.command))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 2 : string) in
     let _3 = (Parsing.peek_val __caml_parser_env 0 : Lambda.term) in
     Obj.repr(
 # 45 "parser.mly"
-      ( _1,_3 )
+        ( Bind (_1, _3) )
 # 244 "parser.ml"
-               : string * Lambda.term))
+               : Lambda.command))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : 'appTerm) in
     Obj.repr(
@@ -430,4 +430,4 @@ let yytables =
     Parsing.names_const=yynames_const;
     Parsing.names_block=yynames_block }
 let s (lexfun : Lexing.lexbuf -> token) (lexbuf : Lexing.lexbuf) =
-   (Parsing.yyparse yytables 1 lexfun lexbuf : string * Lambda.term)
+   (Parsing.yyparse yytables 1 lexfun lexbuf : Lambda.command)

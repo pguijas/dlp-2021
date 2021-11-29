@@ -5,7 +5,12 @@
     isval -> y el tmvar?? (me acaba de rallar que flipas) 
               -> realmente lo que buscamos es cambiar las vars por valores pero porque en la 1º si que lo consideran como valor?? bu me he liao
 
-  letrec --> que intermaente se cambie a lo otro, 1º cambio meter en el mli letrec
+    letrec --> que intermaente se cambie a lo otro, 1º cambio meter en el mli letrec
+
+    - : Nat = ({1 , 2}).1 -> esto no lo reconoce la gramática y realmente no cunde que no lo haga porque un (id({1,2})).1 no lo reconocería tampoco
+
+    en free vars tengo que tener en cuenta el contexto?
+
 *)
 
 (***********************************TYPES***********************************)
@@ -17,10 +22,6 @@ type ty =
   | TyPair of ty * ty
 ;;
 
-(* Contexto es una lista de correspondencias entre variables libres y su tipo *)
-type context =
-  (string * ty) list
-;;
 
 (* Términos *)
 type term =
@@ -40,9 +41,18 @@ type term =
   | TmProj of term * int
 ;;
 
-
-exception Type_error of string
+(* Command *)
+type command =
+    Eval of term
+  | Bind of string * term
 ;;
+
+(* Contexto es una lista de correspondencias entre variables libres y su tipo/valor *)
+type context =
+  (string * ty * term option) list
+;;
+
+exception Type_error of string;;
 
 (*******************************CONTEXT MANAGEMENT*******************************)
 (* Creates an empty context *)
@@ -51,16 +61,26 @@ let emptyctx =
 ;;
 
 (* Adds binding to a given context *)
-let addbinding ctx x bind =
-  (x, bind) :: ctx
+let addbinding ctx x ty te =
+  (x, ty, te) :: ctx
+;;
+
+let addbinding_type ctx x ty =
+  (x, ty, None) :: ctx
 ;;
 
 (* Gets binding to a given context *)
-let getbinding ctx x =
-  List.assoc x ctx
+exception Not_Found;;
+
+let rec getbinding_type ctx x = match ctx with
+  ((a,ty,_)::t) -> if x=a then ty else getbinding_type t x
+  |[] -> raise Not_Found
 ;;
 
-
+let rec getbinding_term ctx x = match ctx with
+  ((a,_,term)::t) -> if x=a then term else getbinding_type t x
+  |[] -> raise Not_Found
+;;
 
 (******************************* Printing *******************************)
 
@@ -108,12 +128,13 @@ let rec string_of_term = function
       "(fix " ^ string_of_term t ^ ")"
   | TmPair (t1, t2) ->
       "{" ^ string_of_term t1 ^ " , " ^ string_of_term t2 ^ "}"
-  | TmProj (TmPair (t1, t2), n) -> (match n with
-        1 -> string_of_term (TmPair (t1, t2)) ^ ".1 = " ^ string_of_term t1
-        | 2 -> string_of_term (TmPair (t1, t2)) ^ ".2 = " ^ string_of_term t2
-        | _ -> raise (Type_error "tuple out of bounds")
-      )
-  | TmProj (t, proj) -> raise (Type_error ("cannot project type " ^ string_of_term t))
+  (* 
+    
+    Esto esta mal -------------------------------------------- molaba meter un print que copiada la expresion lo reconozca la gramática
+  
+  *)
+  | TmProj (t, n) -> 
+      "(" ^ string_of_term t ^ ")." ^ (string_of_int n)
 ;;
 
 
@@ -160,12 +181,12 @@ let rec typeof ctx tm = match tm with
 
     (* T-Var *)
   | TmVar x ->
-      (try getbinding ctx x with
+      (try getbinding_type ctx x with
        _ -> raise (Type_error ("no binding type for variable " ^ x)))
 
     (* T-Abs *)
   | TmAbs (x, tyT1, t2) ->
-      let ctx' = addbinding ctx x tyT1 in
+      let ctx' = addbinding_type ctx x tyT1 in
       let tyT2 = typeof ctx' t2 in
       TyArr (tyT1, tyT2)
 
@@ -182,7 +203,7 @@ let rec typeof ctx tm = match tm with
     (* T-Let *)
   | TmLetIn (x, t1, t2) ->
       let tyT1 = typeof ctx t1 in
-      let ctx' = addbinding ctx x tyT1 in
+      let ctx' = addbinding_type ctx x tyT1 in
       typeof ctx' t2
    
     (* T-TmFix *)
@@ -302,7 +323,20 @@ let rec subst x s tm = match tm with
   | TmIsZero t ->
       TmIsZero (subst x s t)
   | TmVar y ->
-      if y = x then s else tm
+      (* REFLEXION INTERESANTE:
+        revisar el contexto iria en el else para dar un comportamiento de 
+        cercanía (de hecho los bindings se van apilando y el primer tipo en encontrar será el mas cercano)
+      *)
+      if y = x then 
+        s 
+      else 
+        (* acabar de hacer *)
+        (*
+          try getbinding_term ctx x with _ -> tm
+        *)
+        tm
+
+      
   | TmAbs (y, tyY, t) -> 
       if y = x then tm
       else let fvs = free_vars s in
@@ -431,8 +465,8 @@ let rec eval1 tm = match tm with
   (* TODO: revisar esto tb :') *)
   (* E-PairBeta1 *)
   | TmProj (TmPair (t1, t2), n) -> (match n with
-        1 -> eval1 t1
-        | 2 -> eval1 t1
+        1 -> (print_endline "no estoy saltando -");(print_endline (string_of_term t1)); t1
+        | 2 -> t2
         | _ -> raise (Type_error "tuple out of bounds")
       )
   | TmProj (t, proj) -> raise (Type_error ("cannot project type " ^ string_of_term t))

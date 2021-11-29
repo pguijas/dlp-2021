@@ -33,16 +33,16 @@
 %token <string> STRINGV
 
 %start s
-%type <string * Lambda.term> s
+%type <Lambda.command> s
 %type <Lambda.term> term
 
 %%
 
 s :
     term EOF
-      { "",$1 }
+        { Eval $1 }
     | STRINGV EQ term
-      { $1,$3 }
+        { Bind ($1, $3) }
       
 
 term :

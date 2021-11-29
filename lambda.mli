@@ -6,9 +6,6 @@ type ty =
   | TyPair of ty * ty
 ;;
 
-type context =
-  (string * ty) list
-;;
 
 type term =
     TmTrue
@@ -27,9 +24,18 @@ type term =
   | TmProj of term * int
 ;;
 
+type command =
+    Eval of term
+  | Bind of string * term
+;;
+
+type context =
+  (string * ty * term option) list
+;;
+
 val emptyctx : context;;
-val addbinding : context -> string -> ty -> context;;
-val getbinding : context -> string -> ty;;
+val addbinding_type : context -> string -> ty -> context;;
+val getbinding_type : context -> string -> ty;;
 
 val string_of_ty : ty -> string;;
 exception Type_error of string;;
