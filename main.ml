@@ -37,7 +37,7 @@ let rec exec exp ctx = match exp with
       match name with
         | "" -> print_endline ("- : " ^ string_of_ty tyTm ^ " = " ^ string_of_term (eval tm));
         | _ -> print_endline ("val " ^ name ^ " : " ^ string_of_ty tyTm ^ " = " ^ string_of_term (eval tm) );
-      
+      ;
       exec t ctx
 ;;
 

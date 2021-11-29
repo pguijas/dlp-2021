@@ -24,8 +24,7 @@ type term =
   | TmLetIn of string * term * term
   | TmFix of term
   | TmPair of term * term
-  | TmProj1 of term * term
-  | TmProj2 of term * term
+  | TmProj of term * int
 ;;
 
 val emptyctx : context;;

@@ -37,10 +37,12 @@ type term =
   | TmLetIn of string * term * term
   | TmFix of term
   | TmPair of term * term
-  | TmProj1 of term * term
-  | TmProj2 of term * term
+  | TmProj of term * int
 ;;
 
+
+exception Type_error of string
+;;
 
 (*******************************CONTEXT MANAGEMENT*******************************)
 (* Creates an empty context *)
@@ -58,10 +60,65 @@ let getbinding ctx x =
   List.assoc x ctx
 ;;
 
+
+
+(******************************* Printing *******************************)
+
+let rec string_of_ty ty = match ty with
+    TyBool ->
+      "Bool"
+  | TyNat ->
+      "Nat"
+  | TyArr (ty1, ty2) ->
+      "(" ^ string_of_ty ty1 ^ ")" ^ " -> " ^ "(" ^ string_of_ty ty2 ^ ")"
+  | TyPair (ty1, ty2) ->
+      "{ " ^ string_of_ty ty1 ^ " , " ^ string_of_ty ty2 ^ "}"
+;;
+
+let rec string_of_term = function
+    TmTrue ->
+      "true"
+  | TmFalse ->
+      "false"
+  | TmIf (t1,t2,t3) ->
+      "if " ^ "(" ^ string_of_term t1 ^ ")" ^
+      " then " ^ "(" ^ string_of_term t2 ^ ")" ^
+      " else " ^ "(" ^ string_of_term t3 ^ ")"
+  | TmZero ->
+      "0"
+  | TmSucc t ->
+     let rec f n t' = match t' with
+          TmZero -> string_of_int n
+        | TmSucc s -> f (n+1) s
+        | _ -> "succ " ^ "(" ^ string_of_term t ^ ")"
+      in f 1 t
+  | TmPred t ->
+      "pred " ^ "(" ^ string_of_term t ^ ")"
+  | TmIsZero t ->
+      "iszero " ^ "(" ^ string_of_term t ^ ")"
+  | TmVar s ->
+      s
+  | TmAbs (s, tyS, t) ->
+      "(lambda " ^ s ^ ":" ^ string_of_ty tyS ^ ". " ^ string_of_term t ^ ")"
+  | TmApp (t1, t2) ->
+      "(" ^ string_of_term t1 ^ " " ^ string_of_term t2 ^ ")"
+  | TmLetIn (s, t1, t2) ->
+      "let " ^ s ^ " = " ^ string_of_term t1 ^ " in " ^ string_of_term t2
+  | TmFix (t) ->
+      "(fix " ^ string_of_term t ^ ")"
+  | TmPair (t1, t2) ->
+      "{" ^ string_of_term t1 ^ " , " ^ string_of_term t2 ^ "}"
+  | TmProj (TmPair (t1, t2), n) -> (match n with
+        1 -> string_of_term (TmPair (t1, t2)) ^ ".1 = " ^ string_of_term t1
+        | 2 -> string_of_term (TmPair (t1, t2)) ^ ".2 = " ^ string_of_term t2
+        | _ -> raise (Type_error "tuple out of bounds")
+      )
+  | TmProj (t, proj) -> raise (Type_error ("cannot project type " ^ string_of_term t))
+;;
+
+
 (*******************************TYPE MANAGEMENT (TYPING)*******************************)
 
-exception Type_error of string
-;;
 
 (* Given a context and a term we find its type (Inversion Lema) *)
 let rec typeof ctx tm = match tm with
@@ -145,69 +202,17 @@ let rec typeof ctx tm = match tm with
       TyPair(tyT1, tyT2)
 
   (* T-Proj1 *)
-  | TmProj1 (t1, t2) ->
+  | TmProj (TmPair (t1, t2), n) ->
       (* ctx |- P.1 : T1 *)
-      typeof ctx t1
-
-  (* T-Proj2 *)
-  | TmProj2 (t1, t2) ->
-      (* ctx |- P.2 : T2 *)
-      typeof ctx t2
+      (match n with
+        1 -> typeof ctx t1
+        | 2 -> typeof ctx t2
+        | _ -> raise (Type_error "tuple out of bounds")
+      )  
+  | TmProj (t, proj) -> raise (Type_error ("cannot project type " ^ string_of_term t))
 
 ;;
 
-
-(******************************* Printing *******************************)
-
-let rec string_of_ty ty = match ty with
-    TyBool ->
-      "Bool"
-  | TyNat ->
-      "Nat"
-  | TyArr (ty1, ty2) ->
-      "(" ^ string_of_ty ty1 ^ ")" ^ " -> " ^ "(" ^ string_of_ty ty2 ^ ")"
-  | TyPair (ty1, ty2) ->
-      "{ " ^ string_of_ty ty1 ^ " , " ^ string_of_ty ty2 ^ "}"
-;;
-
-let rec string_of_term = function
-    TmTrue ->
-      "true"
-  | TmFalse ->
-      "false"
-  | TmIf (t1,t2,t3) ->
-      "if " ^ "(" ^ string_of_term t1 ^ ")" ^
-      " then " ^ "(" ^ string_of_term t2 ^ ")" ^
-      " else " ^ "(" ^ string_of_term t3 ^ ")"
-  | TmZero ->
-      "0"
-  | TmSucc t ->
-     let rec f n t' = match t' with
-          TmZero -> string_of_int n
-        | TmSucc s -> f (n+1) s
-        | _ -> "succ " ^ "(" ^ string_of_term t ^ ")"
-      in f 1 t
-  | TmPred t ->
-      "pred " ^ "(" ^ string_of_term t ^ ")"
-  | TmIsZero t ->
-      "iszero " ^ "(" ^ string_of_term t ^ ")"
-  | TmVar s ->
-      s
-  | TmAbs (s, tyS, t) ->
-      "(lambda " ^ s ^ ":" ^ string_of_ty tyS ^ ". " ^ string_of_term t ^ ")"
-  | TmApp (t1, t2) ->
-      "(" ^ string_of_term t1 ^ " " ^ string_of_term t2 ^ ")"
-  | TmLetIn (s, t1, t2) ->
-      "let " ^ s ^ " = " ^ string_of_term t1 ^ " in " ^ string_of_term t2
-  | TmFix (t) ->
-      "(fix " ^ string_of_term t ^ ")"
-  | TmPair (t1, t2) ->
-      "{" ^ string_of_term t1 ^ " , " ^ string_of_term t2 ^ "}"
-  | TmProj1 (t1, t2) ->
-      string_of_term (TmProj1 (t1, t2)) ^ ".1 = " ^ string_of_term t1
-  | TmProj2 (t1, t2) ->
-      string_of_term (TmProj1 (t1, t2)) ^ ".2 = " ^ string_of_term t2
-;;
 
 (*********************************** EVAL ***********************************)
 
@@ -252,10 +257,12 @@ let rec free_vars tm = match tm with
   (* TODO: revisar *)
   | TmPair (t1, t2) ->
       lunion (free_vars t1) (free_vars t2)
-  | TmProj1 (t1, t2) ->
-      free_vars t1
-  | TmProj2 (t1, t2) ->
-      free_vars t2
+  | TmProj (TmPair (t1, t2), n) -> (match n with
+        1 -> free_vars t1
+        | 2 -> free_vars t2
+        | _ -> raise (Type_error "tuple out of bounds")
+      )
+  | TmProj (t, proj) -> raise (Type_error ("cannot project type " ^ string_of_term t))
 
 ;;
 
@@ -317,10 +324,12 @@ let rec subst x s tm = match tm with
   (* TODO: revisar *)
   | TmPair (t1, t2) ->
       TmPair ((subst x s t1), (subst x s t2))
-  | TmProj1 (t1, t2) ->
-      subst x s t1
-  | TmProj2 (t1, t2) ->
-      subst x s t2
+  | TmProj (TmPair (t1, t2), n) -> (match n with
+        1 -> subst x s t1
+        | 2 -> subst x s t2
+        | _ -> raise (Type_error "tuple out of bounds")
+      )
+  | TmProj (t, proj) -> raise (Type_error ("cannot project type " ^ string_of_term t))
 ;;
 
 let rec isnumericval tm = match tm with
@@ -421,10 +430,13 @@ let rec eval1 tm = match tm with
 
   (* TODO: revisar esto tb :') *)
   (* E-PairBeta1 *)
-  | TmProj1 (t1, t2) -> eval1 t1
-
+  | TmProj (TmPair (t1, t2), n) -> (match n with
+        1 -> eval1 t1
+        | 2 -> eval1 t1
+        | _ -> raise (Type_error "tuple out of bounds")
+      )
+  | TmProj (t, proj) -> raise (Type_error ("cannot project type " ^ string_of_term t))
   (* E-PairBeta2 *)
-  | TmProj2 (t1, t2) -> eval1 t2
   
   (* E-Proj1 *)
   (* E-Proj2 *)

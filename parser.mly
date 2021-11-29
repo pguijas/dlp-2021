@@ -69,6 +69,8 @@ appTerm :
       { TmIsZero $2 }
   | appTerm atomicTerm
       { TmApp ($1, $2) }
+  | LBRACKET appTerm COMMA appTerm RBRACKET DOT INTV
+      { TmProj (TmPair ($2, $4), $7) }
   | LBRACKET appTerm COMMA appTerm RBRACKET
       { TmPair ($2, $4) }
 
