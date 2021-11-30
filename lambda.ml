@@ -100,7 +100,7 @@ let rec string_of_ty ty = match ty with
   | TyArr (ty1, ty2) ->
       "(" ^ string_of_ty ty1 ^ ")" ^ " -> " ^ "(" ^ string_of_ty ty2 ^ ")"
   | TyPair (ty1, ty2) ->
-      "{ " ^ string_of_ty ty1 ^ " , " ^ string_of_ty ty2 ^ "}"
+      "( " ^ string_of_ty ty1 ^ " * " ^ string_of_ty ty2 ^ ")"
 ;;
 
 let rec string_of_term = function
@@ -142,7 +142,7 @@ let rec string_of_term = function
   
   *)
   | TmProj (t, n) -> 
-      "(" ^ string_of_term t ^ ")." ^ (string_of_int n)
+      string_of_term t ^ "." ^ (string_of_int n)
 ;;
 
 
@@ -384,6 +384,7 @@ let rec isval tm = match tm with
     TmTrue  -> true
   | TmFalse -> true
   | TmAbs _ -> true
+  | TmPair (_,_) -> true
   | t when isnumericval t -> true
   | _ -> false
 ;;
@@ -468,15 +469,16 @@ let rec eval1 ctx tm = match tm with
   | TmFix t1 ->
       let t1' = eval1 ctx t1 in
       TmFix t1'
+ 
+  (* E-Pair2 *)
+  | TmPair (v1, t2) when isval v1 ->
+      let t2' = eval1 ctx t2 in 
+      TmPair (v1, t2')
 
-  | TmPair (t1, t2) -> (try
-      (* E-Pair1 *)
+  (* E-Pair1 *)
+  | TmPair (t1, t2) ->
       let t1' = eval1 ctx t1 in
       TmPair (t1', t2)
-    with NoRuleApplies -> 
-      (* E-Pair2 *)
-      let t2' = eval1 ctx t2 in 
-      TmPair (t1, t2'))
 
   | TmProj (TmPair (t1, t2), n) -> (match n with
         (* E-Proj1 *)
@@ -487,8 +489,7 @@ let rec eval1 ctx tm = match tm with
         | 2 -> t2
         | _ -> raise (Type_error "tuple out of bounds")
       )
-  | TmProj (t, proj) -> raise (Type_error ("cannot project type " ^ string_of_term t))
-  
+
   | TmVar x ->  (try getbinding_term ctx x 
                 with _ -> raise NoRuleApplies) (* REALMENTE INNECESARIO si no esta en ctx cascarian los tipos *)
                 (* 

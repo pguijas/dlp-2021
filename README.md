@@ -8,7 +8,7 @@ Obligatorios (5 ptos +1 si ingles):
 * (Listo) Incorporación de un punto fijo interno para declarar definiciones recursivas directas
 * Incorporación de un contexto en la terminal -> contexto funcional (jodido)
 * Incorporación del tipo string
-* Incorporación de pares: ok ((id({1,2})).1 no lo reconoce).
+* Incorporación de pares: ok (>> a.1 no lo reconoce).
 * Memoria
 
 Opcionales:
