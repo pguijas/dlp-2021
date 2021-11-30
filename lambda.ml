@@ -464,12 +464,15 @@ let rec eval1 ctx tm = match tm with
 
   (* E-Pair1 *)
   (* E-Pair2 *)
-  | TmPair (t1, t2) -> (try
+  (** ESTO NO COMPILABA -> de todas formas esta mal por lo mismo que antes, estas haciendo 2 evals en 1 iteracion
+    | TmPair (t1, t2) -> (try
       let t1' = eval1 t1 in
       eval1 (TmPair (t1', t2))
     with NoRuleApplies -> 
         let t2' = eval1 t2 in 
         TmPair (t1, t2'))
+   *)
+
     
 
   (* TODO: revisar esto tb :') *)
@@ -482,15 +485,12 @@ let rec eval1 ctx tm = match tm with
       )
   | TmProj (t, proj) -> raise (Type_error ("cannot project type " ^ string_of_term t))
   
-<<<<<<< HEAD
   | TmVar x ->  (try getbinding_term ctx x 
                 with _ -> raise NoRuleApplies)
                 (* 
                 
                  *)
   (* E-PairBeta2 *)
-=======
->>>>>>> 1d95bce97eb57815b8fa2e79afee68efd04e4ae0
   
   (* E-Proj1 *)
   (* E-Proj2 *)
