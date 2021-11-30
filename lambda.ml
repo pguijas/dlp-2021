@@ -511,17 +511,7 @@ let rec subs_ctx ctx tm vl = match tm with
     if List.mem x vl then
       tm
     else
-      (try getbinding_term ctx x with _ -> tm) (* Realmente si es libre  *)
-
-      (* Duda:
-       que pasa si tienes l x.x y tienes x en el ctx, que hacemos???? -> preguntar habra que mirar que no sea una free var o klk?
-
-       >> id_nat = L x:Nat. x;;
-      val id_nat : (Nat) -> (Nat) = (lambda x:Nat. 1)
-      
-
-
-      *)
+      (try getbinding_term ctx x with _ -> tm) (* Realmente si es libre y no esta en el contexto ya cascan los tipos*)
   | TmAbs (y, tyY, t) -> TmAbs (y, tyY, subs_ctx ctx t (y::vl))
   | TmApp (t1, t2) -> TmApp (subs_ctx ctx t1 vl, subs_ctx ctx t2 vl)
   | TmLetIn (y, t1, t2) -> TmLetIn (y, subs_ctx ctx t1 vl, subs_ctx ctx t2 (y::vl))
