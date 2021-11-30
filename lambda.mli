@@ -34,8 +34,10 @@ type context =
 ;;
 
 val emptyctx : context;;
+val addbinding : context -> string -> ty -> term -> context;;
 val addbinding_type : context -> string -> ty -> context;;
 val getbinding_type : context -> string -> ty;;
+val getbinding_term : context -> string -> term;;
 
 val string_of_ty : ty -> string;;
 exception Type_error of string;;
@@ -43,5 +45,5 @@ val typeof : context -> term -> ty;;
 
 val string_of_term : term -> string;;
 exception NoRuleApplies;;
-val eval : term -> term;;
+val eval : context -> term -> term;;
 

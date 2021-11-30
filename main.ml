@@ -30,13 +30,20 @@ let rec get_exp s =
 
 (* Tokenizing and evaluating a list of expresions... (redactar molon) *)
 let rec exec exp ctx = match exp with
-  | [] -> ()
+  | [] -> ctx
   | h::t -> 
       match s token (from_string (h)) with
-        | Eval tm  -> print_endline ("- : " ^ (string_of_ty (typeof ctx tm)) ^ " = " ^ string_of_term (eval tm));
-        | Bind (name,tm) -> print_endline ("val " ^ name ^ " : " ^ (string_of_ty (typeof ctx tm)) ^ " = " ^ string_of_term (eval tm) );
-      ;
-      exec t ctx
+        | Eval tm  -> 
+            print_endline ("- : " ^ (string_of_ty (typeof ctx tm)) ^ " = " ^ string_of_term (eval ctx tm));
+            exec t ctx
+        | Bind (name,tm) -> 
+            print_endline ("val " ^ name ^ " : " ^ (string_of_ty (typeof ctx tm)) ^ " = " ^ string_of_term (eval ctx tm) );
+            exec t (addbinding ctx name (typeof ctx tm) tm)
+            (*
+            (addbinding ctx name (typeof ctx tm) tm)
+            *)
+      
+      
 ;;
 
 (*Dado un input, lo parsea, lo evalua y printa su resultado*)
@@ -47,8 +54,8 @@ let top_level_loop () =
     flush stdout;
     try
       (* De momento el contexto no lo tocamos, en caunto se pueda actualizar ojocuidao -> vamos a tener que ir actualizandolo x instuccion *)
-      exec (get_exp (read_line ())) ctx;
-      loop ctx
+      (* Ya puedo explicarlo bien que si no no se entiende un pijo *)
+      loop (exec (get_exp (read_line ())) ctx);
     with
        Lexical_error ->
          print_endline "lexical error";

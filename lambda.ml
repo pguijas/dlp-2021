@@ -62,7 +62,7 @@ let emptyctx =
 
 (* Adds binding to a given context *)
 let addbinding ctx x ty te =
-  (x, ty, te) :: ctx
+  (x, ty, Some(te)) :: ctx
 ;;
 
 let addbinding_type ctx x ty =
@@ -78,7 +78,8 @@ let rec getbinding_type ctx x = match ctx with
 ;;
 
 let rec getbinding_term ctx x = match ctx with
-  ((a,_,term)::t) -> if x=a then term else getbinding_type t x
+  ((a,_,Some(term))::t) -> if x=a then term else getbinding_term t x
+  |((a,_,None)::t) -> getbinding_term t x
   |[] -> raise Not_Found
 ;;
 
@@ -307,60 +308,59 @@ let rec fresh_name x l =
                                   -si (y es fv de s)    -> se genera un nuevo nombre para la abstracción y se continua el proceso recursivo
 
 *)
-let rec subst x s tm = match tm with
+let rec subst ctx x s tm = match tm with
     TmTrue ->
       TmTrue
   | TmFalse ->
       TmFalse
   | TmIf (t1, t2, t3) ->
-      TmIf (subst x s t1, subst x s t2, subst x s t3)
+      TmIf (subst ctx x s t1, subst ctx x s t2, subst ctx x s t3)
   | TmZero ->
       TmZero
   | TmSucc t ->
-      TmSucc (subst x s t)
+      TmSucc (subst ctx x s t)
   | TmPred t ->
-      TmPred (subst x s t)
+      TmPred (subst ctx x s t)
   | TmIsZero t ->
-      TmIsZero (subst x s t)
+      TmIsZero (subst ctx x s t)
   | TmVar y ->
       (* REFLEXION INTERESANTE:
         revisar el contexto iria en el else para dar un comportamiento de 
         cercanía (de hecho los bindings se van apilando y el primer tipo en encontrar será el mas cercano)
       *)
-      if y = x then 
-        s 
-      else 
-        (* acabar de hacer *)
-        (*
-          try getbinding_term ctx x with _ -> tm
-        *)
-        tm
+      (* MAL CAMBIAR *)
+      if y = x then s else tm
+       
+      (* Esto va en el eval no en el subs  *)
+      (*(try getbinding_term ctx x with _ -> tm)
+         acabar de hacer *)
+        
 
       
   | TmAbs (y, tyY, t) -> 
       if y = x then tm
       else let fvs = free_vars s in
            if not (List.mem y fvs)
-           then TmAbs (y, tyY, subst x s t)
+           then TmAbs (y, tyY, subst ctx x s t)
            else let z = fresh_name y (free_vars t @ fvs) in
-                TmAbs (z, tyY, subst x s (subst y (TmVar z) t))  
+                TmAbs (z, tyY, subst ctx x s (subst ctx y (TmVar z) t))  
   | TmApp (t1, t2) ->
-      TmApp (subst x s t1, subst x s t2)
+      TmApp (subst ctx x s t1, subst ctx x s t2)
   | TmLetIn (y, t1, t2) ->
-      if y = x then TmLetIn (y, subst x s t1, t2)
+      if y = x then TmLetIn (y, subst ctx x s t1, t2)
       else let fvs = free_vars s in
            if not (List.mem y fvs)
-           then TmLetIn (y, subst x s t1, subst x s t2)
+           then TmLetIn (y, subst ctx x s t1, subst ctx x s t2)
            else let z = fresh_name y (free_vars t2 @ fvs) in
-                TmLetIn (z, subst x s t1, subst x s (subst y (TmVar z) t2))
+                TmLetIn (z, subst ctx x s t1, subst ctx x s (subst ctx y (TmVar z) t2))
   | TmFix t -> 
-      TmFix (subst x s t)
+      TmFix (subst ctx x s t)
   (* TODO: revisar *)
   | TmPair (t1, t2) ->
-      TmPair ((subst x s t1), (subst x s t2))
+      TmPair ((subst ctx x s t1), (subst ctx x s t2))
   | TmProj (TmPair (t1, t2), n) -> (match n with
-        1 -> subst x s t1
-        | 2 -> subst x s t2
+        1 -> subst ctx x s t1
+        | 2 -> subst ctx x s t2
         | _ -> raise (Type_error "tuple out of bounds")
       )
   | TmProj (t, proj) -> raise (Type_error ("cannot project type " ^ string_of_term t))
@@ -385,7 +385,7 @@ exception NoRuleApplies
 ;;
 
 (* Evaluamos *)
-let rec eval1 tm = match tm with
+let rec eval1 ctx tm = match tm with
     (* E-IfTrue *)
     TmIf (TmTrue, t2, _) ->
       t2
@@ -396,12 +396,12 @@ let rec eval1 tm = match tm with
 
     (* E-If *)
   | TmIf (t1, t2, t3) ->
-      let t1' = eval1 t1 in
+      let t1' = eval1 ctx t1 in
       TmIf (t1', t2, t3)
 
     (* E-Succ *)
   | TmSucc t1 ->
-      let t1' = eval1 t1 in
+      let t1' = eval1 ctx t1 in
       TmSucc t1'
 
     (* E-PredZero *)
@@ -414,7 +414,7 @@ let rec eval1 tm = match tm with
 
     (* E-Pred *)
   | TmPred t1 ->
-      let t1' = eval1 t1 in
+      let t1' = eval1 ctx t1 in
       TmPred t1'
 
     (* E-IszeroZero *)
@@ -427,39 +427,39 @@ let rec eval1 tm = match tm with
 
     (* E-Iszero *)
   | TmIsZero t1 ->
-      let t1' = eval1 t1 in
+      let t1' = eval1 ctx t1 in
       TmIsZero t1'
 
     (* E-AppAbs *)
   | TmApp (TmAbs(x, _, t12), v2) when isval v2 ->
-      subst x v2 t12
+      subst ctx x v2 t12
 
     (* E-App2: evaluate argument before applying function *)
   | TmApp (v1, t2) when isval v1 ->
-      let t2' = eval1 t2 in
+      let t2' = eval1 ctx t2 in
       TmApp (v1, t2')
 
     (* E-App1: evaluate function before argument *)
   | TmApp (t1, t2) ->
-      let t1' = eval1 t1 in
+      let t1' = eval1 ctx t1 in
       TmApp (t1', t2)
 
     (* E-LetV *)
   | TmLetIn (x, v1, t2) when isval v1 ->
-      subst x v1 t2
+      subst ctx x v1 t2
 
     (* E-Let *)
   | TmLetIn(x, t1, t2) ->
-      let t1' = eval1 t1 in
+      let t1' = eval1 ctx t1 in
       TmLetIn (x, t1', t2) 
 
     (* E-FixBeta *)
   | TmFix (TmAbs (x,_,t12)) ->
-      subst x tm t12
+      subst ctx x tm t12
 
     (* E-Fix *)
   | TmFix t1 ->
-      let t1' = eval1 t1 in
+      let t1' = eval1 ctx t1 in
       TmFix t1'
 
   (* TODO: revisar esto tb :') *)
@@ -470,6 +470,12 @@ let rec eval1 tm = match tm with
         | _ -> raise (Type_error "tuple out of bounds")
       )
   | TmProj (t, proj) -> raise (Type_error ("cannot project type " ^ string_of_term t))
+  
+  | TmVar x ->  (try getbinding_term ctx x 
+                with _ -> raise NoRuleApplies)
+                (* 
+                
+                 *)
   (* E-PairBeta2 *)
   
   (* E-Proj1 *)
@@ -482,11 +488,11 @@ let rec eval1 tm = match tm with
 ;;
 
 (* Evaluate until no more terms can be evaluated *)
-let rec eval tm =
+let rec eval ctx tm =
   try
-    let tm' = eval1 tm in
+    let tm' = eval1 ctx tm in
       print_endline ("\t" ^ string_of_term (tm') ^ " : (falta meter el tipo)");
-      eval tm'
+      eval ctx tm'
   with
     NoRuleApplies -> tm
 ;;
