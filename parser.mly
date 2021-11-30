@@ -17,6 +17,7 @@
 %token IN
 %token BOOL
 %token NAT
+%token TPAIR
 
 %token LPAREN
 %token RPAREN
@@ -56,6 +57,8 @@ term :
       { TmLetIn ($2, $4, $6) }
   | LETREC STRINGV COLON ty EQ term IN term
       { TmLetIn ($2, TmFix (TmAbs ($2,$4,$6)), $8) }
+  | term DOT INTV
+      { TmProj ($1, $3) }
 
 
 appTerm :
@@ -69,11 +72,6 @@ appTerm :
       { TmIsZero $2 }
   | appTerm atomicTerm
       { TmApp ($1, $2) }
-  | LBRACKET appTerm COMMA appTerm RBRACKET DOT INTV
-      { TmProj (TmPair ($2, $4), $7) (* esto esta mal, yo lo subia al termio por ejemplo, y si no pues no ponerlo tan restrictivo
-      # (let x = 1 in x,1);;
-        - : int * int = (1, 1)
-      *)}
   | LBRACKET appTerm COMMA appTerm RBRACKET
       { TmPair ($2, $4) }
 
@@ -97,6 +95,8 @@ ty :
       { $1 }
   | atomicTy ARROW ty
       { TyArr ($1, $3) }
+  | atomicTy TPAIR atomicTy
+      { TyPair ($1, $3) }
 
 atomicTy :
     LPAREN ty RPAREN  

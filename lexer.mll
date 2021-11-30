@@ -21,6 +21,7 @@ rule token = parse
   | "in"        { IN }
   | "Bool"      { BOOL }
   | "Nat"       { NAT }
+  | "*"         { TPAIR }
   | '('         { LPAREN }
   | ')'         { RPAREN }
   | '.'         { DOT }

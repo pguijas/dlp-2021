@@ -11,6 +11,13 @@
 
     en free vars tengo que tener en cuenta el contexto?
 
+
+  (*| LBRACKET appTerm COMMA appTerm RBRACKET DOT INTV
+      { TmProj (TmPair ($2, $4), $7)  esto esta mal, yo lo subia al termio por ejemplo, y si no pues no ponerlo tan restrictivo
+      # (let x = 1 in x,1);;
+        - : int * int = (1, 1)
+      }*)
+
 *)
 
 (***********************************TYPES***********************************)
@@ -462,23 +469,20 @@ let rec eval1 ctx tm = match tm with
       let t1' = eval1 ctx t1 in
       TmFix t1'
 
-  (* E-Pair1 *)
-  (* E-Pair2 *)
-  (** > de toTdas formas esta mal por lo mismo que antes, estas haciendo 2 evals en 1 iteracion *)
   | TmPair (t1, t2) -> (try
+      (* E-Pair1 *)
       let t1' = eval1 ctx t1 in
       TmPair (t1', t2)
     with NoRuleApplies -> 
+      (* E-Pair2 *)
       let t2' = eval1 ctx t2 in 
       TmPair (t1, t2'))
-   
 
-    
-
-  (* TODO: revisar esto tb :') *)
   | TmProj (TmPair (t1, t2), n) -> (match n with
+        (* E-Proj1 *)
         (* E-PairBeta1 *)
         1 -> t1
+        (* E-Proj2 *)
         (* E-PairBeta2 *)
         | 2 -> t2
         | _ -> raise (Type_error "tuple out of bounds")
@@ -490,10 +494,6 @@ let rec eval1 ctx tm = match tm with
                 (* 
                 
                  *)
-  (* E-PairBeta2 *)
-  
-  (* E-Proj1 *)
-  (* E-Proj2 *)
 
   | _ ->
       raise NoRuleApplies
