@@ -464,14 +464,14 @@ let rec eval1 ctx tm = match tm with
 
   (* E-Pair1 *)
   (* E-Pair2 *)
-  (** ESTO NO COMPILABA -> de todas formas esta mal por lo mismo que antes, estas haciendo 2 evals en 1 iteracion
-    | TmPair (t1, t2) -> (try
-      let t1' = eval1 t1 in
-      eval1 (TmPair (t1', t2))
+  (** > de toTdas formas esta mal por lo mismo que antes, estas haciendo 2 evals en 1 iteracion *)
+  | TmPair (t1, t2) -> (try
+      let t1' = eval1 ctx t1 in
+      TmPair (t1', t2)
     with NoRuleApplies -> 
-        let t2' = eval1 t2 in 
-        TmPair (t1, t2'))
-   *)
+      let t2' = eval1 ctx t2 in 
+      TmPair (t1, t2'))
+   
 
     
 
@@ -499,6 +499,30 @@ let rec eval1 ctx tm = match tm with
       raise NoRuleApplies
 ;;
 
+let rec subs_ctx ctx tm = match tm with
+    TmTrue -> TmTrue
+  | TmFalse -> TmFalse
+  | TmIf (t1, t2, t3) -> TmIf (subs_ctx ctx t1, subs_ctx ctx t2, subs_ctx ctx t3) 
+  | TmZero -> TmZero
+  | TmSucc t -> TmSucc (subs_ctx ctx t)
+  | TmPred t -> TmPred (subs_ctx ctx t)
+  | TmIsZero t -> TmIsZero (subs_ctx ctx t)
+  | TmVar x -> (try getbinding_term ctx x with _ -> tm) (* y esto, puede no estar en el ctx no y no estar subs *)
+      (* Duda:
+       que pasa si tienes l x.x y tienes x en el ctx, que hacemos???? -> preguntar habra que mirar que no sea una free var o klk?
+
+       >> id_nat = L x:Nat. x;;
+      val id_nat : (Nat) -> (Nat) = (lambda x:Nat. 1)
+      
+      *)
+  | TmAbs (y, tyY, t) -> TmAbs (y, tyY, subs_ctx ctx t)
+  | TmApp (t1, t2) -> TmApp (subs_ctx ctx t1, subs_ctx ctx t2)
+  | TmLetIn (y, t1, t2) -> TmLetIn (y, subs_ctx ctx t1, subs_ctx ctx t2)
+  | TmFix t ->  TmFix (subs_ctx ctx t)
+  | TmPair (t1, t2) -> TmPair ((subs_ctx ctx t1), (subs_ctx ctx t2))
+  | TmProj (t, proj) -> TmProj (subs_ctx ctx t, proj)
+;;
+
 (* Evaluate until no more terms can be evaluated *)
 let rec eval ctx tm =
   try
@@ -506,6 +530,6 @@ let rec eval ctx tm =
       print_endline ("\t" ^ string_of_term (tm') ^ " : (falta meter el tipo)");
       eval ctx tm'
   with
-    NoRuleApplies -> tm
+    NoRuleApplies -> subs_ctx ctx tm
 ;;
 

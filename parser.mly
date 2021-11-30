@@ -70,7 +70,10 @@ appTerm :
   | appTerm atomicTerm
       { TmApp ($1, $2) }
   | LBRACKET appTerm COMMA appTerm RBRACKET DOT INTV
-      { TmProj (TmPair ($2, $4), $7) }
+      { TmProj (TmPair ($2, $4), $7) (* esto esta mal, yo lo subia al termio por ejemplo, y si no pues no ponerlo tan restrictivo
+      # (let x = 1 in x,1);;
+        - : int * int = (1, 1)
+      *)}
   | LBRACKET appTerm COMMA appTerm RBRACKET
       { TmPair ($2, $4) }
 

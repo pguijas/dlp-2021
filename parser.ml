@@ -328,86 +328,89 @@ let yyact = [|
     let _7 = (Parsing.peek_val __caml_parser_env 0 : int) in
     Obj.repr(
 # 73 "parser.mly"
-      ( TmProj (TmPair (_2, _4), _7) )
-# 333 "parser.ml"
+      ( TmProj (TmPair (_2, _4), _7) (* esto esta mal, yo lo subia al termio por ejemplo, y si no pues no ponerlo tan restrictivo
+      # (let x = 1 in x,1);;
+        - : int * int = (1, 1)
+      *))
+# 336 "parser.ml"
                : 'appTerm))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 3 : 'appTerm) in
     let _4 = (Parsing.peek_val __caml_parser_env 1 : 'appTerm) in
     Obj.repr(
-# 75 "parser.mly"
+# 78 "parser.mly"
       ( TmPair (_2, _4) )
-# 341 "parser.ml"
+# 344 "parser.ml"
                : 'appTerm))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 1 : Lambda.term) in
     Obj.repr(
-# 79 "parser.mly"
+# 82 "parser.mly"
       ( _2 )
-# 348 "parser.ml"
+# 351 "parser.ml"
                : 'atomicTerm))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 81 "parser.mly"
+# 84 "parser.mly"
       ( TmTrue )
-# 354 "parser.ml"
+# 357 "parser.ml"
                : 'atomicTerm))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 83 "parser.mly"
+# 86 "parser.mly"
       ( TmFalse )
-# 360 "parser.ml"
+# 363 "parser.ml"
                : 'atomicTerm))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : string) in
     Obj.repr(
-# 85 "parser.mly"
+# 88 "parser.mly"
       ( TmVar _1 )
-# 367 "parser.ml"
+# 370 "parser.ml"
                : 'atomicTerm))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : int) in
     Obj.repr(
-# 87 "parser.mly"
+# 90 "parser.mly"
       ( let rec f = function
             0 -> TmZero
           | n -> TmSucc (f (n-1))
         in f _1 )
-# 377 "parser.ml"
+# 380 "parser.ml"
                : 'atomicTerm))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : 'atomicTy) in
     Obj.repr(
-# 94 "parser.mly"
+# 97 "parser.mly"
       ( _1 )
-# 384 "parser.ml"
+# 387 "parser.ml"
                : 'ty))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 2 : 'atomicTy) in
     let _3 = (Parsing.peek_val __caml_parser_env 0 : 'ty) in
     Obj.repr(
-# 96 "parser.mly"
+# 99 "parser.mly"
       ( TyArr (_1, _3) )
-# 392 "parser.ml"
+# 395 "parser.ml"
                : 'ty))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 1 : 'ty) in
     Obj.repr(
-# 100 "parser.mly"
+# 103 "parser.mly"
       ( _2 )
-# 399 "parser.ml"
+# 402 "parser.ml"
                : 'atomicTy))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 102 "parser.mly"
+# 105 "parser.mly"
       ( TyBool )
-# 405 "parser.ml"
+# 408 "parser.ml"
                : 'atomicTy))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 104 "parser.mly"
+# 107 "parser.mly"
       ( TyNat )
-# 411 "parser.ml"
+# 414 "parser.ml"
                : 'atomicTy))
 (* Entry s *)
 ; (fun __caml_parser_env -> raise (Parsing.YYexit (Parsing.peek_val __caml_parser_env 0)))
