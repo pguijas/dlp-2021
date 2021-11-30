@@ -37,13 +37,9 @@ let rec exec exp ctx = match exp with
             print_endline ("- : " ^ (string_of_ty (typeof ctx tm)) ^ " = " ^ string_of_term (eval ctx tm));
             exec t ctx
         | Bind (name,tm) -> 
-            print_endline ("val " ^ name ^ " : " ^ (string_of_ty (typeof ctx tm)) ^ " = " ^ string_of_term (eval ctx tm) );
-            exec t (addbinding ctx name (typeof ctx tm) tm)
-            (*
-            (addbinding ctx name (typeof ctx tm) tm)
-            *)
-      
-      
+            let tm_eval = eval ctx tm in
+              print_endline ("val " ^ name ^ " : " ^ (string_of_ty (typeof ctx tm)) ^ " = " ^ string_of_term (tm_eval) );
+              exec t (addbinding ctx name (typeof ctx tm) (tm_eval)) 
 ;;
 
 (*Dado un input, lo parsea, lo evalua y printa su resultado*)

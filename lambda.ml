@@ -486,7 +486,7 @@ let rec eval1 ctx tm = match tm with
   | TmProj (t, proj) -> raise (Type_error ("cannot project type " ^ string_of_term t))
   
   | TmVar x ->  (try getbinding_term ctx x 
-                with _ -> raise NoRuleApplies)
+                with _ -> raise NoRuleApplies) (* REALMENTE INNECESARIO si no esta en ctx cascarian los tipos *)
                 (* 
                 
                  *)
@@ -499,28 +499,35 @@ let rec eval1 ctx tm = match tm with
       raise NoRuleApplies
 ;;
 
-let rec subs_ctx ctx tm = match tm with
+let rec subs_ctx ctx tm vl = match tm with
     TmTrue -> TmTrue
   | TmFalse -> TmFalse
-  | TmIf (t1, t2, t3) -> TmIf (subs_ctx ctx t1, subs_ctx ctx t2, subs_ctx ctx t3) 
+  | TmIf (t1, t2, t3) -> TmIf (subs_ctx ctx t1 vl, subs_ctx ctx t2 vl, subs_ctx ctx t3 vl) 
   | TmZero -> TmZero
-  | TmSucc t -> TmSucc (subs_ctx ctx t)
-  | TmPred t -> TmPred (subs_ctx ctx t)
-  | TmIsZero t -> TmIsZero (subs_ctx ctx t)
-  | TmVar x -> (try getbinding_term ctx x with _ -> tm) (* y esto, puede no estar en el ctx no y no estar subs *)
+  | TmSucc t -> TmSucc (subs_ctx ctx t vl)
+  | TmPred t -> TmPred (subs_ctx ctx t vl)
+  | TmIsZero t -> TmIsZero (subs_ctx ctx t vl)
+  | TmVar x -> 
+    if List.mem x vl then
+      tm
+    else
+      (try getbinding_term ctx x with _ -> tm) (* Realmente si es libre  *)
+
       (* Duda:
        que pasa si tienes l x.x y tienes x en el ctx, que hacemos???? -> preguntar habra que mirar que no sea una free var o klk?
 
        >> id_nat = L x:Nat. x;;
       val id_nat : (Nat) -> (Nat) = (lambda x:Nat. 1)
       
+
+
       *)
-  | TmAbs (y, tyY, t) -> TmAbs (y, tyY, subs_ctx ctx t)
-  | TmApp (t1, t2) -> TmApp (subs_ctx ctx t1, subs_ctx ctx t2)
-  | TmLetIn (y, t1, t2) -> TmLetIn (y, subs_ctx ctx t1, subs_ctx ctx t2)
-  | TmFix t ->  TmFix (subs_ctx ctx t)
-  | TmPair (t1, t2) -> TmPair ((subs_ctx ctx t1), (subs_ctx ctx t2))
-  | TmProj (t, proj) -> TmProj (subs_ctx ctx t, proj)
+  | TmAbs (y, tyY, t) -> TmAbs (y, tyY, subs_ctx ctx t (y::vl))
+  | TmApp (t1, t2) -> TmApp (subs_ctx ctx t1 vl, subs_ctx ctx t2 vl)
+  | TmLetIn (y, t1, t2) -> TmLetIn (y, subs_ctx ctx t1 vl, subs_ctx ctx t2 (y::vl))
+  | TmFix t ->  TmFix (subs_ctx ctx t vl)
+  | TmPair (t1, t2) -> TmPair ((subs_ctx ctx t1 vl), (subs_ctx ctx t2 vl))
+  | TmProj (t, proj) -> TmProj (subs_ctx ctx t vl, proj)
 ;;
 
 (* Evaluate until no more terms can be evaluated *)
@@ -530,6 +537,5 @@ let rec eval ctx tm =
       print_endline ("\t" ^ string_of_term (tm') ^ " : (falta meter el tipo)");
       eval ctx tm'
   with
-    NoRuleApplies -> subs_ctx ctx tm
+    NoRuleApplies -> subs_ctx ctx tm []
 ;;
-

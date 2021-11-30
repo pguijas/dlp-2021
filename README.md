@@ -26,7 +26,6 @@ DUDAS:
 * String concat, usamos tuplas?? usar concat de ocaml solo para el print. y cooncat del palo de concat(x,y) o x ^ y
 * id = (L x : Nat.{x,x});; (id 1).1;;
 * en la gramática hector metio las tuplas en appterm, estan bien mi senor??
-* que pasa si tienes l x.x y tienes x en el ctx, que hacemos???? -> preguntar 511
 * en tmproj int / termino que sea un entero??
 
 TODO
