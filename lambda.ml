@@ -100,7 +100,7 @@ let rec string_of_ty ty = match ty with
   | TyArr (ty1, ty2) ->
       "(" ^ string_of_ty ty1 ^ ")" ^ " -> " ^ "(" ^ string_of_ty ty2 ^ ")"
   | TyPair (ty1, ty2) ->
-      "( " ^ string_of_ty ty1 ^ " * " ^ string_of_ty ty2 ^ ")"
+      "(" ^ string_of_ty ty1 ^ " * " ^ string_of_ty ty2 ^ ")"
 ;;
 
 let rec string_of_term = function
@@ -231,14 +231,13 @@ let rec typeof ctx tm = match tm with
       TyPair(tyT1, tyT2)
 
   (* T-Proj1 *)
-  | TmProj (TmPair (t1, t2), n) ->
-      (* ctx |- P.1 : T1 *)
-      (match n with
-        1 -> typeof ctx t1
-        | 2 -> typeof ctx t2
-        | _ -> raise (Type_error "tuple out of bounds")
-      )  
-  | TmProj (t, proj) -> raise (Type_error ("cannot project type " ^ string_of_term t))
+  | TmProj (t, n) -> 
+      (match (typeof ctx t, n) with
+        (TyPair (ty1, _), 1) -> ty1
+        | (TyPair (_, ty2), 2) -> ty2
+        | (TyPair (_, _), _) -> raise (Type_error "tuple out of bounds")
+        | (_, _) -> raise (Type_error ("cannot project type " ^ string_of_ty (typeof ctx t)))
+        )
 
 ;;
 
@@ -291,7 +290,7 @@ let rec free_vars tm = match tm with
         | 2 -> free_vars t2
         | _ -> raise (Type_error "tuple out of bounds")
       )
-  | TmProj (t, proj) -> raise (Type_error ("cannot project type " ^ string_of_term t))
+  | TmProj (t, proj) -> raise (Type_error ("cannott project type " ^ string_of_term t))
 
 ;;
 
@@ -370,7 +369,7 @@ let rec subst ctx x s tm = match tm with
         | 2 -> subst ctx x s t2
         | _ -> raise (Type_error "tuple out of bounds")
       )
-  | TmProj (t, proj) -> raise (Type_error ("cannot project type " ^ string_of_term t))
+  | TmProj (t, proj) -> raise (Type_error ("cannottt project type " ^ string_of_term t))
 ;;
 
 let rec isnumericval tm = match tm with

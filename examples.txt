@@ -18,5 +18,11 @@ let x = 5 in let id_nat = L x:Nat. x in id_nat x
 let fix = lambda f.(lambda x. f (lambda y. x x y)) (lambda x. f (lambda y. x x y)) in let sumaux = lambda f. (lambda n. (lambda m. if (iszero n) then m else succ (f (pred n) m))) in let sum = fix sumaux in sum 21 34
 let fix = lambda f.(lambda x. f (lambda y. x x y)) (lambda x. f (lambda y. x x y)) in let sumaux = lambda f. (lambda n. (lambda m. if (iszero n) then m else succ (f (pred n) m))) in let sum = fix sumaux in let prodaux = lambda f. (lambda n. (lambda m. if (iszero (pred n)) then m else sum (f (pred n) m) m)) in let prod = fix prodaux in prod 12 5
 
-
-id = (L x: (Nat * Nat) .x);;
+Pares:
+{(L x:Bool .x), true};;
+{(L x:Bool .x)false, true};;
+{(L x:Bool .x)false, (L x:Bool .x)true}.1;;
+{(L x:Bool .x)false, (L x:Bool .x)true}.2;;
+{succ(succ(0)), (if (iszero 0) then 1 else succ (1))};;
+a = (L x: Nat*Bool .x){succ(succ(0)), iszero(succ(0))};;
+a.1;;

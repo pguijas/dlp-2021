@@ -44,7 +44,6 @@ s :
         { Eval $1 }
     | STRINGV EQ term
         { Bind ($1, $3) }
-      
 
 term :
     appTerm
@@ -57,9 +56,6 @@ term :
       { TmLetIn ($2, $4, $6) }
   | LETREC STRINGV COLON ty EQ term IN term
       { TmLetIn ($2, TmFix (TmAbs ($2,$4,$6)), $8) }
-  | term DOT INTV
-      { TmProj ($1, $3) }
-
 
 appTerm :
     atomicTerm
@@ -72,6 +68,8 @@ appTerm :
       { TmIsZero $2 }
   | appTerm atomicTerm
       { TmApp ($1, $2) }
+  | atomicTerm DOT INTV
+      { TmProj ($1, $3) (* esto daba conflictos: term -> atomicTerm *)}
 
 atomicTerm :
     LPAREN term RPAREN
