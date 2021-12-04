@@ -7,16 +7,7 @@
 
     letrec --> que intermaente se cambie a lo otro, 1º cambio meter en el mli letrec
 
-    - : Nat = ({1 , 2}).1 -> esto no lo reconoce la gramática y realmente no cunde que no lo haga porque un (id({1,2})).1 no lo reconocería tampoco
-
     en free vars tengo que tener en cuenta el contexto?
-
-
-  (*| LBRACKET appTerm COMMA appTerm RBRACKET DOT INTV
-      { TmProj (TmPair ($2, $4), $7)  esto esta mal, yo lo subia al termio por ejemplo, y si no pues no ponerlo tan restrictivo
-      # (let x = 1 in x,1);;
-        - : int * int = (1, 1)
-      }*)
 
 *)
 
@@ -285,12 +276,12 @@ let rec free_vars tm = match tm with
   (* TODO: revisar *)
   | TmPair (t1, t2) ->
       lunion (free_vars t1) (free_vars t2)
-  | TmProj (TmPair (t1, t2), n) -> (match n with
-        1 -> free_vars t1
-        | 2 -> free_vars t2
-        | _ -> raise (Type_error "tuple out of bounds")
-      )
-  | TmProj (t, proj) -> raise (Type_error ("cannott project type " ^ string_of_term t))
+  | TmProj (t, n) -> (match (t, n) with
+        (TmPair (t1, _), 1) -> free_vars t1
+        | (TmPair (_, t2), 2) -> free_vars t2
+        | (TmPair (_, _), _) -> raise (Type_error "tuple out of bounds")
+        | (_, _) -> raise (Type_error ("cannot project term " ^ string_of_term t))
+  )
 
 ;;
 
@@ -364,13 +355,12 @@ let rec subst ctx x s tm = match tm with
   (* TODO: revisar *)
   | TmPair (t1, t2) ->
       TmPair ((subst ctx x s t1), (subst ctx x s t2))
-  | TmProj (TmPair (t1, t2), n) -> (match n with
-        1 -> subst ctx x s t1
-        | 2 -> subst ctx x s t2
-        | _ -> raise (Type_error "tuple out of bounds")
-      )
-  | TmProj (t, proj) -> raise (Type_error ("cannottt project type " ^ string_of_term t))
-;;
+  | TmProj (t, n) -> (match (t, n) with
+        (TmPair (t1, _), 1) -> subst ctx x s t1
+        | (TmPair (_, t2), 2) -> subst ctx x s t2
+        | (TmPair (_, _), _) -> raise (Type_error "tuple out of bounds")
+        | (_, _) -> raise (Type_error ("cannot project term " ^ string_of_term t ^ " : " ^ string_of_ty (typeof ctx t)))
+  )
 
 let rec isnumericval tm = match tm with
     TmZero -> true
@@ -479,15 +469,16 @@ let rec eval1 ctx tm = match tm with
       let t1' = eval1 ctx t1 in
       TmPair (t1', t2)
 
-  | TmProj (TmPair (t1, t2), n) -> (match n with
+  | TmProj (t, n) -> (match (t, n) with
         (* E-Proj1 *)
         (* E-PairBeta1 *)
-        1 -> t1
+        (TmPair (t1, _), 1) -> t1
         (* E-Proj2 *)
         (* E-PairBeta2 *)
-        | 2 -> t2
-        | _ -> raise (Type_error "tuple out of bounds")
-      )
+        | (TmPair (_, t2), 2) -> t2
+        | (TmPair (_, _), _) -> raise (Type_error "tuple out of bounds")
+        | (_, _) -> raise (Type_error ("cannot project term " ^ string_of_term t ^ " : " ^ string_of_ty (typeof ctx t)))
+  )
 
   | TmVar x ->  (try getbinding_term ctx x 
                 with _ -> raise NoRuleApplies) (* REALMENTE INNECESARIO si no esta en ctx cascarian los tipos *)
