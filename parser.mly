@@ -18,6 +18,7 @@
 %token BOOL
 %token NAT
 %token TPAIR
+%token STRING
 
 %token LPAREN
 %token RPAREN
@@ -28,10 +29,12 @@
 %token LBRACKET
 %token COMMA
 %token RBRACKET
+%token QUOTE
 %token EOF
 
 %token <int> INTV
 %token <string> STRINGV
+%token <string> TSTRING
 
 %start s
 %type <Lambda.command> s
@@ -87,6 +90,10 @@ atomicTerm :
             0 -> TmZero
           | n -> TmSucc (f (n-1))
         in f $1 }
+  | QUOTE STRINGV QUOTE 
+    { TmString $2 }
+  | QUOTE TSTRING QUOTE 
+    { TmString $2 }
 
 ty :
     atomicTy
@@ -103,4 +110,6 @@ atomicTy :
       { TyBool }
   | NAT
       { TyNat }
+  | STRING
+      { TyString }
 

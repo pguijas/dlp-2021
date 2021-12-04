@@ -18,6 +18,7 @@ type ty =
   | TyNat
   | TyArr of ty * ty (* arrow type *)
   | TyPair of ty * ty
+  | TyString
 ;;
 
 
@@ -37,6 +38,7 @@ type term =
   | TmFix of term
   | TmPair of term * term
   | TmProj of term * int
+  | TmString of string
 ;;
 
 (* Command *)
@@ -88,6 +90,8 @@ let rec string_of_ty ty = match ty with
       "Bool"
   | TyNat ->
       "Nat"
+  | TyString ->
+      "String"
   | TyArr (ty1, ty2) ->
       "(" ^ string_of_ty ty1 ^ ")" ^ " -> " ^ "(" ^ string_of_ty ty2 ^ ")"
   | TyPair (ty1, ty2) ->
@@ -99,6 +103,8 @@ let rec string_of_term = function
       "true"
   | TmFalse ->
       "false"
+  | TmString str ->
+      "\"" ^ str ^ "\""
   | TmIf (t1,t2,t3) ->
       "if " ^ "(" ^ string_of_term t1 ^ ")" ^
       " then " ^ "(" ^ string_of_term t2 ^ ")" ^
@@ -149,6 +155,9 @@ let rec typeof ctx tm = match tm with
     (* T-False *)
   | TmFalse ->
       TyBool
+
+  | TmString _ ->
+      TyString
 
     (* T-If *)
   | TmIf (t1, t2, t3) ->
@@ -253,6 +262,8 @@ let rec free_vars tm = match tm with
       []
   | TmFalse ->
       []
+  | TmString _ ->
+      []
   | TmIf (t1, t2, t3) ->
       lunion (lunion (free_vars t1) (free_vars t2)) (free_vars t3)
   | TmZero ->
@@ -310,6 +321,8 @@ let rec subst ctx x s tm = match tm with
       TmTrue
   | TmFalse ->
       TmFalse
+  | TmString _ ->
+      tm
   | TmIf (t1, t2, t3) ->
       TmIf (subst ctx x s t1, subst ctx x s t2, subst ctx x s t3)
   | TmZero ->
@@ -493,6 +506,7 @@ let rec eval1 ctx tm = match tm with
 let rec subs_ctx ctx tm vl = match tm with
     TmTrue -> TmTrue
   | TmFalse -> TmFalse
+  | TmString _ -> tm
   | TmIf (t1, t2, t3) -> TmIf (subs_ctx ctx t1 vl, subs_ctx ctx t2 vl, subs_ctx ctx t3 vl) 
   | TmZero -> TmZero
   | TmSucc t -> TmSucc (subs_ctx ctx t vl)
