@@ -1,4 +1,3 @@
-
 %{
   open Lambda;;
 %}
@@ -18,7 +17,6 @@
 %token BOOL
 %token NAT
 %token TPAIR
-%token STRING
 
 %token LPAREN
 %token RPAREN
@@ -26,16 +24,14 @@
 %token EQ
 %token COLON
 %token ARROW
-%token UP
 %token LBRACKET
 %token COMMA
 %token RBRACKET
-%token QUOTE
 %token EOF
 
 %token <int> INTV
 %token <string> STRINGV
-%token <string> STR_VAR
+%token <string> TSTR
 
 %start s
 %type <Lambda.command> s
@@ -46,7 +42,7 @@
 s :
     term EOF
         { Eval $1 }
-    | STR_VAR EQ term
+    | STRINGV EQ term
         { Bind ($1, $3) }
 
 term :
@@ -73,9 +69,7 @@ appTerm :
   | appTerm atomicTerm
       { TmApp ($1, $2) }
   | atomicTerm DOT INTV
-      { TmProj ($1, $3)}
-  | atomicTerm UP atomicTerm
-      { TmConcat ($1, $3) }
+      { TmProj ($1, $3) (* esto daba conflictos: term -> atomicTerm *)}
 
 atomicTerm :
     LPAREN term RPAREN
@@ -86,15 +80,15 @@ atomicTerm :
       { TmTrue }
   | FALSE
       { TmFalse }
-  | STR_VAR
+  | STRINGV
       { TmVar $1 }
   | INTV
       { let rec f = function
             0 -> TmZero
           | n -> TmSucc (f (n-1))
         in f $1 }
-  | QUOTE STRINGV QUOTE 
-    { TmString $2 }
+  | TSTR
+      { TmString $1 }
 
 ty :
     atomicTy
@@ -111,6 +105,3 @@ atomicTy :
       { TyBool }
   | NAT
       { TyNat }
-  | STRING
-      { TyString }
-

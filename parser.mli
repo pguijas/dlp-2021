@@ -14,22 +14,19 @@ type token =
   | BOOL
   | NAT
   | TPAIR
-  | STRING
   | LPAREN
   | RPAREN
   | DOT
   | EQ
   | COLON
   | ARROW
-  | UP
   | LBRACKET
   | COMMA
   | RBRACKET
-  | QUOTE
   | EOF
   | INTV of (int)
   | STRINGV of (string)
-  | STR_VAR of (string)
+  | TSTR of (string)
 
 val s :
   (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Lambda.command
