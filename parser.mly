@@ -26,6 +26,7 @@
 %token EQ
 %token COLON
 %token ARROW
+%token UP
 %token LBRACKET
 %token COMMA
 %token RBRACKET
@@ -34,7 +35,7 @@
 
 %token <int> INTV
 %token <string> STRINGV
-%token <string> TSTRING
+%token <string> STR_VAR
 
 %start s
 %type <Lambda.command> s
@@ -45,7 +46,7 @@
 s :
     term EOF
         { Eval $1 }
-    | STRINGV EQ term
+    | STR_VAR EQ term
         { Bind ($1, $3) }
 
 term :
@@ -72,7 +73,9 @@ appTerm :
   | appTerm atomicTerm
       { TmApp ($1, $2) }
   | atomicTerm DOT INTV
-      { TmProj ($1, $3) (* esto daba conflictos: term -> atomicTerm *)}
+      { TmProj ($1, $3)}
+  | atomicTerm UP atomicTerm
+      { TmConcat ($1, $3) }
 
 atomicTerm :
     LPAREN term RPAREN
@@ -83,7 +86,7 @@ atomicTerm :
       { TmTrue }
   | FALSE
       { TmFalse }
-  | STRINGV
+  | STR_VAR
       { TmVar $1 }
   | INTV
       { let rec f = function
@@ -91,8 +94,6 @@ atomicTerm :
           | n -> TmSucc (f (n-1))
         in f $1 }
   | QUOTE STRINGV QUOTE 
-    { TmString $2 }
-  | QUOTE TSTRING QUOTE 
     { TmString $2 }
 
 ty :

@@ -24,6 +24,7 @@ type term =
   | TmPair of term * term
   | TmProj of term * int
   | TmString of string
+  | TmConcat of term * term
 ;;
 
 type command =

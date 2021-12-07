@@ -6,7 +6,7 @@ Obligatorios (5 ptos +1 si ingles):
 
 * (Listo) Reconocimiento de expresiones multi-línea
 * (Listo) Incorporación de un punto fijo interno para declarar definiciones recursivas directas
-* Incorporación de un contexto en la terminal -> contexto funcional (jodido)
+* (Listo) Incorporación de un contexto en la terminal -> contexto funcional 
 * Incorporación del tipo string: | TmConcat String + term (recursivo -> str + str + str + ...) .
 * (Listo) Incorporación de pares.
 * Memoria
@@ -28,6 +28,7 @@ DUDAS:
 * en la gramática hector metio las tuplas en appterm, estan bien mi senor??
 * en tmproj int / termino que sea un entero??
 * with NoRuleApplies -> 471
+* conflicto con STRING y cosas como LAMBDA o L
 
 TODO
 
@@ -37,3 +38,8 @@ Dudas:
 * contexto funcional ->  basicamente el problema es cuando tienes una abstraccion sin evaluar, como no se va a aplicar la var al contexto y deberia fijarse al valor de la var al contexto en ese momento de ejecución vamos a tener que comernos luego el término para fijar lo libre.
 * no me funciona algo del rollo L x.x -> hay que especificarle el tipo wtf
 * que es el __s__ token -> en funcs del lexer/parser me pierdo algo
+
+MEMORIA
+
+String Cualquier cosa que no sea un terminador, op concat como en ocaml
+Tuplas (x,y) el tipo se especifica con *

@@ -29,15 +29,16 @@ rule token = parse
   | '='         { EQ }
   | ':'         { COLON }
   | "->"        { ARROW }
+  | '^'         { UP }
   | '{'         { LBRACKET }
   | ','         { COMMA }
   | '}'         { RBRACKET }
   | '"'         { QUOTE }
   | ['0'-'9']+  { INTV (int_of_string (Lexing.lexeme lexbuf)) }
-  | ['a'-'z']['a'-'z' '_' ' ' '0'-'9']*
+  | [^';''\"''\'']*
                 { STRINGV (Lexing.lexeme lexbuf) }
   | ['a'-'z' '_' ' ' '0'-'9']
-                { TSTRING (Lexing.lexeme lexbuf) }
+                { STR_VAR (Lexing.lexeme lexbuf) }
   | eof         { EOF }
   | _           { raise Lexical_error } 
 
