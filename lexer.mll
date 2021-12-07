@@ -35,7 +35,7 @@ rule token = parse
   | '}'         { RBRACKET }
   | '"'         { QUOTE }
   | ['0'-'9']+  { INTV (int_of_string (Lexing.lexeme lexbuf)) }
-  | ['a'-'z']['a'-'z' '_' ' ' '0'-'9']*
+  | ['a'-'z']['a'-'z' '_' '0'-'9']*
                 { STRINGV (Lexing.lexeme lexbuf) }
   | '\"'[^';''\"''\'']*'\"'
                 { STRINGT (Lexing.lexeme lexbuf) }
