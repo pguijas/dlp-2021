@@ -2,13 +2,30 @@
   Recuerden Traducir todo caballeros.
 
   Dudas:
-    isval -> y el tmvar?? (me acaba de rallar que flipas) 
-              -> realmente lo que buscamos es cambiar las vars por valores pero porque en la 1º si que lo consideran como valor?? bu me he liao
+    -revisar que los tipos rtdos sean coherentes y reitruducibles
+    -atomicTy TPAIR atomicTy esto esta bien? 
+  
 
-    letrec --> que intermaente se cambie a lo otro, 1º cambio meter en el mli letrec
+  ['a'-'z' '_' ' ' '0'-'9'] -> yo no le pondría un cualquier cosa salvo cerrar comillas y ;
 
-    en free vars tengo que tener en cuenta el contexto?
+  Error Curioso (cascan espacios):
+    ------------------------------------------------------------------------------------------------
+    >> L x:Nat.x;;
+    - : (Nat) -> (Nat) = (lambda x:Nat. x)
+    >> L x:Nat.x ;;
+    type error: no binding type for variable x
 
+    id = (L x: (Nat * Nat) .x);;
+    val id  : ((Nat * Nat)) -> ((Nat * Nat)) = (lambda x:(Nat * Nat). x)
+    >> id = (L x: (Nat * Nat) .x );;
+    type error: no binding type for variable x  
+
+    ------------------------------------------------------------------------------------------------
+
+    >> (lambda x:(Nat * Nat). x);;
+    syntax error
+    >> (L x:(Nat * Nat). x);;
+    - : ((Nat * Nat)) -> ((Nat * Nat)) = (lambda x:(Nat * Nat). x)
 *)
 
 (***********************************TYPES***********************************)
@@ -236,7 +253,7 @@ let rec typeof ctx tm = match tm with
         (TyPair (ty1, _), 1) -> ty1
         | (TyPair (_, ty2), 2) -> ty2
         | (TyPair (_, _), _) -> raise (Type_error "tuple out of bounds")
-        | (_, _) -> raise (Type_error ("cannot project type " ^ string_of_ty (typeof ctx t)))
+        | (x, _) -> raise (Type_error ("cannot project type " ^ string_of_ty x))
         )
 
 ;;
@@ -287,12 +304,7 @@ let rec free_vars tm = match tm with
   (* TODO: revisar *)
   | TmPair (t1, t2) ->
       lunion (free_vars t1) (free_vars t2)
-  | TmProj (t, n) -> (match (t, n) with
-        (TmPair (t1, _), 1) -> free_vars t1
-        | (TmPair (_, t2), 2) -> free_vars t2
-        | (TmPair (_, _), _) -> raise (Type_error "tuple out of bounds")
-        | (_, _) -> raise (Type_error ("cannot project term " ^ string_of_term t))
-  )
+  | TmProj (t, n) -> free_vars t
 
 ;;
 
@@ -366,14 +378,9 @@ let rec subst ctx x s tm = match tm with
   | TmFix t -> 
       TmFix (subst ctx x s t)
   (* TODO: revisar *)
-  | TmPair (t1, t2) ->
-      TmPair ((subst ctx x s t1), (subst ctx x s t2))
-  | TmProj (t, n) -> (match (t, n) with
-        (TmPair (t1, _), 1) -> subst ctx x s t1
-        | (TmPair (_, t2), 2) -> subst ctx x s t2
-        | (TmPair (_, _), _) -> raise (Type_error "tuple out of bounds")
-        | (_, _) -> raise (Type_error ("cannot project term " ^ string_of_term t ^ " : " ^ string_of_ty (typeof ctx t)))
-  )
+  | TmPair (t1, t2) -> TmPair ((subst ctx x s t1), (subst ctx x s t2))
+  | TmProj (t, n)   -> TmProj (subst ctx x s t, n)
+
 
 let rec isnumericval tm = match tm with
     TmZero -> true
@@ -386,7 +393,7 @@ let rec isval tm = match tm with
     TmTrue  -> true
   | TmFalse -> true
   | TmAbs _ -> true
-  | TmPair (_,_) -> true
+  | TmPair(t1,t2) -> (isval t1) && (isval t2)
   | t when isnumericval t -> true
   | _ -> false
 ;;
@@ -483,14 +490,15 @@ let rec eval1 ctx tm = match tm with
       TmPair (t1', t2)
 
   | TmProj (t, n) -> (match (t, n) with
-        (* E-Proj1 *)
         (* E-PairBeta1 *)
         (TmPair (t1, _), 1) -> t1
-        (* E-Proj2 *)
         (* E-PairBeta2 *)
         | (TmPair (_, t2), 2) -> t2
-        | (TmPair (_, _), _) -> raise (Type_error "tuple out of bounds")
-        | (_, _) -> raise (Type_error ("cannot project term " ^ string_of_term t ^ " : " ^ string_of_ty (typeof ctx t)))
+        (* E-Proj1-2 *)
+        | (t, n) -> 
+          let t' = eval1 ctx t in 
+          TmProj (t', n)
+      
   )
 
   | TmVar x ->  (try getbinding_term ctx x 

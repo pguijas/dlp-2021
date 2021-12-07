@@ -28,6 +28,9 @@ a = (L x: Nat*Bool .x){succ(succ(0)), iszero(succ(0))};;
 a.1;;
 (L x:Bool .x) ({true, false}.1);;
 
+id_pair = L x:Nat*Nat. x;;
+(id_pair {1,2}).1;;
+
 
 Strings:
 "pedro huele a caca"
