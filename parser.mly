@@ -31,11 +31,7 @@
 
 %token <int> INTV
 %token <string> STRINGV
-<<<<<<< HEAD
-%token <string> TSTR
-=======
 %token <string> STRINGT
->>>>>>> 2124841f55d5b774668402864cb58770b2f728d6
 
 %start s
 %type <Lambda.command> s
@@ -91,13 +87,8 @@ atomicTerm :
             0 -> TmZero
           | n -> TmSucc (f (n-1))
         in f $1 }
-<<<<<<< HEAD
-  | TSTR
-      { TmString $1 }
-=======
   | STRINGT
     { TmString $1 }
->>>>>>> 2124841f55d5b774668402864cb58770b2f728d6
 
 ty :
     atomicTy
@@ -114,8 +105,5 @@ atomicTy :
       { TyBool }
   | NAT
       { TyNat }
-<<<<<<< HEAD
-=======
   | STRING
       { TyString }
->>>>>>> 2124841f55d5b774668402864cb58770b2f728d6
