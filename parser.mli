@@ -21,7 +21,6 @@ type token =
   | EQ
   | COLON
   | ARROW
-  | UP
   | LBRACKET
   | COMMA
   | RBRACKET
@@ -29,7 +28,7 @@ type token =
   | EOF
   | INTV of (int)
   | STRINGV of (string)
-  | STR_VAR of (string)
+  | TSTRING of (string)
 
 val s :
   (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Lambda.command
