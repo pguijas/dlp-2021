@@ -17,6 +17,7 @@
 %token BOOL
 %token NAT
 %token TPAIR
+%token STRING
 
 %token LPAREN
 %token RPAREN
@@ -24,9 +25,11 @@
 %token EQ
 %token COLON
 %token ARROW
+%token UP
 %token LBRACKET
 %token COMMA
 %token RBRACKET
+%token QUOTE
 %token EOF
 
 %token <int> INTV

@@ -1,3 +1,4 @@
+
 {
   open Parser;;
   exception Lexical_error;; 
@@ -20,6 +21,7 @@ rule token = parse
   | "in"        { IN }
   | "Bool"      { BOOL }
   | "Nat"       { NAT }
+  | "String"    { STRING }
   | "*"         { TPAIR }
   | '('         { LPAREN }
   | ')'         { RPAREN }
@@ -27,16 +29,18 @@ rule token = parse
   | '='         { EQ }
   | ':'         { COLON }
   | "->"        { ARROW }
+  | '^'         { UP }
   | '{'         { LBRACKET }
   | ','         { COMMA }
   | '}'         { RBRACKET }
+  | '"'         { QUOTE }
   | ['0'-'9']+  { INTV (int_of_string (Lexing.lexeme lexbuf)) }
   | ['a'-'z']['a'-'z' '_' '0'-'9']*
-                { STRINGV (
-                  let s = Lexing.lexeme lexbuf
-                  in String.sub s 1 ((String.length ss)-2);;
-                ) }
+                { STRINGV ( Lexing.lexeme lexbuf ) }
   | '\"'[^';''\"''\'']*'\"'
-                { STRINGT (Lexing.lexeme lexbuf) }
+                { STRINGT (
+                  let s = Lexing.lexeme lexbuf
+                  in String.sub s 1 ((String.length s)-2)
+                ) }
   | eof         { EOF }
   | _           { raise Lexical_error } 
