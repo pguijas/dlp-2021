@@ -36,7 +36,10 @@ rule token = parse
   | '"'         { QUOTE }
   | ['0'-'9']+  { INTV (int_of_string (Lexing.lexeme lexbuf)) }
   | ['a'-'z']['a'-'z' '_' '0'-'9']*
-                { STRINGV (Lexing.lexeme lexbuf) }
+                { STRINGV (
+                  let s = Lexing.lexeme lexbuf
+                  in String.sub s 1 ((String.length ss)-2);;
+                ) }
   | '\"'[^';''\"''\'']*'\"'
                 { STRINGT (Lexing.lexeme lexbuf) }
   | eof         { EOF }
