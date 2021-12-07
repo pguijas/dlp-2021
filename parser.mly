@@ -26,6 +26,7 @@
 %token EQ
 %token COLON
 %token ARROW
+%token UP
 %token LBRACKET
 %token COMMA
 %token RBRACKET
@@ -34,7 +35,7 @@
 
 %token <int> INTV
 %token <string> STRINGV
-%token <string> TSTRING
+%token <string> STRINGT
 
 %start s
 %type <Lambda.command> s
@@ -90,10 +91,8 @@ atomicTerm :
             0 -> TmZero
           | n -> TmSucc (f (n-1))
         in f $1 }
-  | QUOTE STRINGV QUOTE 
-    { TmString $2 }
-  | QUOTE TSTRING QUOTE 
-    { TmString $2 }
+  | STRINGT
+    { TmString $1 }
 
 ty :
     atomicTy
