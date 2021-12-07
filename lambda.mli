@@ -4,6 +4,7 @@ type ty =
   | TyNat
   | TyArr of ty * ty
   | TyPair of ty * ty
+  | TyString
 ;;
 
 
@@ -22,6 +23,7 @@ type term =
   | TmFix of term
   | TmPair of term * term
   | TmProj of term * int
+  | TmString of string
 ;;
 
 type command =

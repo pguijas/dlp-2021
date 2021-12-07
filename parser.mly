@@ -17,6 +17,8 @@
 %token IN
 %token BOOL
 %token NAT
+%token TPAIR
+%token STRING
 
 %token LPAREN
 %token RPAREN
@@ -27,10 +29,12 @@
 %token LBRACKET
 %token COMMA
 %token RBRACKET
+%token QUOTE
 %token EOF
 
 %token <int> INTV
 %token <string> STRINGV
+%token <string> TSTRING
 
 %start s
 %type <Lambda.command> s
@@ -43,7 +47,6 @@ s :
         { Eval $1 }
     | STRINGV EQ term
         { Bind ($1, $3) }
-      
 
 term :
     appTerm
@@ -57,7 +60,6 @@ term :
   | LETREC STRINGV COLON ty EQ term IN term
       { TmLetIn ($2, TmFix (TmAbs ($2,$4,$6)), $8) }
 
-
 appTerm :
     atomicTerm
       { $1 }
@@ -69,17 +71,14 @@ appTerm :
       { TmIsZero $2 }
   | appTerm atomicTerm
       { TmApp ($1, $2) }
-  | LBRACKET appTerm COMMA appTerm RBRACKET DOT INTV
-      { TmProj (TmPair ($2, $4), $7) (* esto esta mal, yo lo subia al termio por ejemplo, y si no pues no ponerlo tan restrictivo
-      # (let x = 1 in x,1);;
-        - : int * int = (1, 1)
-      *)}
-  | LBRACKET appTerm COMMA appTerm RBRACKET
-      { TmPair ($2, $4) }
+  | atomicTerm DOT INTV
+      { TmProj ($1, $3) (* esto daba conflictos: term -> atomicTerm *)}
 
 atomicTerm :
     LPAREN term RPAREN
       { $2 }
+  | LBRACKET appTerm COMMA appTerm RBRACKET
+      { TmPair ($2, $4) }
   | TRUE
       { TmTrue }
   | FALSE
@@ -91,12 +90,18 @@ atomicTerm :
             0 -> TmZero
           | n -> TmSucc (f (n-1))
         in f $1 }
+  | QUOTE STRINGV QUOTE 
+    { TmString $2 }
+  | QUOTE TSTRING QUOTE 
+    { TmString $2 }
 
 ty :
     atomicTy
       { $1 }
   | atomicTy ARROW ty
       { TyArr ($1, $3) }
+  | atomicTy TPAIR atomicTy
+      { TyPair ($1, $3) }
 
 atomicTy :
     LPAREN ty RPAREN  
@@ -105,4 +110,6 @@ atomicTy :
       { TyBool }
   | NAT
       { TyNat }
+  | STRING
+      { TyString }
 

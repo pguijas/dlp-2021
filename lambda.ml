@@ -7,8 +7,6 @@
 
     letrec --> que intermaente se cambie a lo otro, 1º cambio meter en el mli letrec
 
-    - : Nat = ({1 , 2}).1 -> esto no lo reconoce la gramática y realmente no cunde que no lo haga porque un (id({1,2})).1 no lo reconocería tampoco
-
     en free vars tengo que tener en cuenta el contexto?
 
 *)
@@ -20,6 +18,7 @@ type ty =
   | TyNat
   | TyArr of ty * ty (* arrow type *)
   | TyPair of ty * ty
+  | TyString
 ;;
 
 
@@ -39,6 +38,7 @@ type term =
   | TmFix of term
   | TmPair of term * term
   | TmProj of term * int
+  | TmString of string
 ;;
 
 (* Command *)
@@ -90,10 +90,12 @@ let rec string_of_ty ty = match ty with
       "Bool"
   | TyNat ->
       "Nat"
+  | TyString ->
+      "String"
   | TyArr (ty1, ty2) ->
       "(" ^ string_of_ty ty1 ^ ")" ^ " -> " ^ "(" ^ string_of_ty ty2 ^ ")"
   | TyPair (ty1, ty2) ->
-      "{ " ^ string_of_ty ty1 ^ " , " ^ string_of_ty ty2 ^ "}"
+      "(" ^ string_of_ty ty1 ^ " * " ^ string_of_ty ty2 ^ ")"
 ;;
 
 let rec string_of_term = function
@@ -101,6 +103,8 @@ let rec string_of_term = function
       "true"
   | TmFalse ->
       "false"
+  | TmString str ->
+      "\"" ^ str ^ "\""
   | TmIf (t1,t2,t3) ->
       "if " ^ "(" ^ string_of_term t1 ^ ")" ^
       " then " ^ "(" ^ string_of_term t2 ^ ")" ^
@@ -135,7 +139,7 @@ let rec string_of_term = function
   
   *)
   | TmProj (t, n) -> 
-      "(" ^ string_of_term t ^ ")." ^ (string_of_int n)
+      string_of_term t ^ "." ^ (string_of_int n)
 ;;
 
 
@@ -151,6 +155,9 @@ let rec typeof ctx tm = match tm with
     (* T-False *)
   | TmFalse ->
       TyBool
+
+  | TmString _ ->
+      TyString
 
     (* T-If *)
   | TmIf (t1, t2, t3) ->
@@ -224,14 +231,13 @@ let rec typeof ctx tm = match tm with
       TyPair(tyT1, tyT2)
 
   (* T-Proj1 *)
-  | TmProj (TmPair (t1, t2), n) ->
-      (* ctx |- P.1 : T1 *)
-      (match n with
-        1 -> typeof ctx t1
-        | 2 -> typeof ctx t2
-        | _ -> raise (Type_error "tuple out of bounds")
-      )  
-  | TmProj (t, proj) -> raise (Type_error ("cannot project type " ^ string_of_term t))
+  | TmProj (t, n) -> 
+      (match (typeof ctx t, n) with
+        (TyPair (ty1, _), 1) -> ty1
+        | (TyPair (_, ty2), 2) -> ty2
+        | (TyPair (_, _), _) -> raise (Type_error "tuple out of bounds")
+        | (_, _) -> raise (Type_error ("cannot project type " ^ string_of_ty (typeof ctx t)))
+        )
 
 ;;
 
@@ -256,6 +262,8 @@ let rec free_vars tm = match tm with
       []
   | TmFalse ->
       []
+  | TmString _ ->
+      []
   | TmIf (t1, t2, t3) ->
       lunion (lunion (free_vars t1) (free_vars t2)) (free_vars t3)
   | TmZero ->
@@ -279,12 +287,12 @@ let rec free_vars tm = match tm with
   (* TODO: revisar *)
   | TmPair (t1, t2) ->
       lunion (free_vars t1) (free_vars t2)
-  | TmProj (TmPair (t1, t2), n) -> (match n with
-        1 -> free_vars t1
-        | 2 -> free_vars t2
-        | _ -> raise (Type_error "tuple out of bounds")
-      )
-  | TmProj (t, proj) -> raise (Type_error ("cannot project type " ^ string_of_term t))
+  | TmProj (t, n) -> (match (t, n) with
+        (TmPair (t1, _), 1) -> free_vars t1
+        | (TmPair (_, t2), 2) -> free_vars t2
+        | (TmPair (_, _), _) -> raise (Type_error "tuple out of bounds")
+        | (_, _) -> raise (Type_error ("cannot project term " ^ string_of_term t))
+  )
 
 ;;
 
@@ -313,6 +321,8 @@ let rec subst ctx x s tm = match tm with
       TmTrue
   | TmFalse ->
       TmFalse
+  | TmString _ ->
+      tm
   | TmIf (t1, t2, t3) ->
       TmIf (subst ctx x s t1, subst ctx x s t2, subst ctx x s t3)
   | TmZero ->
@@ -358,13 +368,12 @@ let rec subst ctx x s tm = match tm with
   (* TODO: revisar *)
   | TmPair (t1, t2) ->
       TmPair ((subst ctx x s t1), (subst ctx x s t2))
-  | TmProj (TmPair (t1, t2), n) -> (match n with
-        1 -> subst ctx x s t1
-        | 2 -> subst ctx x s t2
-        | _ -> raise (Type_error "tuple out of bounds")
-      )
-  | TmProj (t, proj) -> raise (Type_error ("cannot project type " ^ string_of_term t))
-;;
+  | TmProj (t, n) -> (match (t, n) with
+        (TmPair (t1, _), 1) -> subst ctx x s t1
+        | (TmPair (_, t2), 2) -> subst ctx x s t2
+        | (TmPair (_, _), _) -> raise (Type_error "tuple out of bounds")
+        | (_, _) -> raise (Type_error ("cannot project term " ^ string_of_term t ^ " : " ^ string_of_ty (typeof ctx t)))
+  )
 
 let rec isnumericval tm = match tm with
     TmZero -> true
@@ -377,6 +386,7 @@ let rec isval tm = match tm with
     TmTrue  -> true
   | TmFalse -> true
   | TmAbs _ -> true
+  | TmPair (_,_) -> true
   | t when isnumericval t -> true
   | _ -> false
 ;;
@@ -461,39 +471,33 @@ let rec eval1 ctx tm = match tm with
   | TmFix t1 ->
       let t1' = eval1 ctx t1 in
       TmFix t1'
+ 
+  (* E-Pair2 *)
+  | TmPair (v1, t2) when isval v1 ->
+      let t2' = eval1 ctx t2 in 
+      TmPair (v1, t2')
 
   (* E-Pair1 *)
-  (* E-Pair2 *)
-  (** > de toTdas formas esta mal por lo mismo que antes, estas haciendo 2 evals en 1 iteracion *)
-  | TmPair (t1, t2) -> (try
+  | TmPair (t1, t2) ->
       let t1' = eval1 ctx t1 in
       TmPair (t1', t2)
-    with NoRuleApplies -> 
-      let t2' = eval1 ctx t2 in 
-      TmPair (t1, t2'))
-   
 
-    
-
-  (* TODO: revisar esto tb :') *)
-  | TmProj (TmPair (t1, t2), n) -> (match n with
+  | TmProj (t, n) -> (match (t, n) with
+        (* E-Proj1 *)
         (* E-PairBeta1 *)
-        1 -> t1
+        (TmPair (t1, _), 1) -> t1
+        (* E-Proj2 *)
         (* E-PairBeta2 *)
-        | 2 -> t2
-        | _ -> raise (Type_error "tuple out of bounds")
-      )
-  | TmProj (t, proj) -> raise (Type_error ("cannot project type " ^ string_of_term t))
-  
+        | (TmPair (_, t2), 2) -> t2
+        | (TmPair (_, _), _) -> raise (Type_error "tuple out of bounds")
+        | (_, _) -> raise (Type_error ("cannot project term " ^ string_of_term t ^ " : " ^ string_of_ty (typeof ctx t)))
+  )
+
   | TmVar x ->  (try getbinding_term ctx x 
                 with _ -> raise NoRuleApplies) (* REALMENTE INNECESARIO si no esta en ctx cascarian los tipos *)
                 (* 
                 
                  *)
-  (* E-PairBeta2 *)
-  
-  (* E-Proj1 *)
-  (* E-Proj2 *)
 
   | _ ->
       raise NoRuleApplies
@@ -502,6 +506,7 @@ let rec eval1 ctx tm = match tm with
 let rec subs_ctx ctx tm vl = match tm with
     TmTrue -> TmTrue
   | TmFalse -> TmFalse
+  | TmString _ -> tm
   | TmIf (t1, t2, t3) -> TmIf (subs_ctx ctx t1 vl, subs_ctx ctx t2 vl, subs_ctx ctx t3 vl) 
   | TmZero -> TmZero
   | TmSucc t -> TmSucc (subs_ctx ctx t vl)
