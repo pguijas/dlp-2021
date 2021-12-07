@@ -123,6 +123,8 @@ let rec string_of_term = function
       "false"
   | TmString str ->
       "\"" ^ str ^ "\""
+  | TmConcat (t1,t2) ->
+      string_of_term t1 ^ "^" ^ string_of_term t2
   | TmIf (t1,t2,t3) ->
       "if " ^ "(" ^ string_of_term t1 ^ ")" ^
       " then " ^ "(" ^ string_of_term t2 ^ ")" ^
@@ -176,6 +178,13 @@ let rec typeof ctx tm = match tm with
 
   | TmString _ ->
       TyString
+
+  (* T-Concat *)
+  | TmConcat (t1, t2) -> 
+      if (typeof ctx t1 = TyString) && (typeof ctx t2 = TyString) then
+        TyString
+      else
+        raise (Type_error "terms of concatenate are not strings")
 
     (* T-If *)
   | TmIf (t1, t2, t3) ->
@@ -256,7 +265,6 @@ let rec typeof ctx tm = match tm with
         | (TyPair (_, _), _) -> raise (Type_error "tuple out of bounds")
         | (x, _) -> raise (Type_error ("cannot project type " ^ string_of_ty x))
         )
-
 ;;
 
 
@@ -282,6 +290,8 @@ let rec free_vars tm = match tm with
       []
   | TmString _ ->
       []
+  | TmConcat (t1, t2) ->
+      lunion (free_vars t1) (free_vars t2)
   | TmIf (t1, t2, t3) ->
       lunion (lunion (free_vars t1) (free_vars t2)) (free_vars t3)
   | TmZero ->
@@ -336,6 +346,8 @@ let rec subst ctx x s tm = match tm with
       TmFalse
   | TmString _ ->
       tm
+  | TmConcat (t1, t2) ->
+      TmConcat (subst ctx x s t1, subst ctx x s t2)
   | TmIf (t1, t2, t3) ->
       TmIf (subst ctx x s t1, subst ctx x s t2, subst ctx x s t3)
   | TmZero ->
@@ -394,6 +406,7 @@ let rec isval tm = match tm with
     TmTrue  -> true
   | TmFalse -> true
   | TmAbs _ -> true
+  | TmString _ -> true
   | TmPair(t1,t2) -> (isval t1) && (isval t2)
   | t when isnumericval t -> true
   | _ -> false
@@ -516,6 +529,7 @@ let rec subs_ctx ctx tm vl = match tm with
     TmTrue -> TmTrue
   | TmFalse -> TmFalse
   | TmString _ -> tm
+  | TmConcat (t1, t2) -> TmConcat (subs_ctx ctx t1 vl, subs_ctx ctx t2 vl) 
   | TmIf (t1, t2, t3) -> TmIf (subs_ctx ctx t1 vl, subs_ctx ctx t2 vl, subs_ctx ctx t3 vl) 
   | TmZero -> TmZero
   | TmSucc t -> TmSucc (subs_ctx ctx t vl)

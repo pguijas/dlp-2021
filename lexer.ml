@@ -846,29 +846,26 @@ and __ocaml_lex_token_rec lexbuf __ocaml_lex_state =
 
   | 30 ->
 # 39 "lexer.mll"
-                ( STRINGV (
-                  Lexing.lexeme lexbuf
-
-                ) )
-# 854 "lexer.ml"
+                ( STRINGV ( Lexing.lexeme lexbuf ) )
+# 851 "lexer.ml"
 
   | 31 ->
-# 44 "lexer.mll"
+# 41 "lexer.mll"
                 ( STRINGT (
                   let s = Lexing.lexeme lexbuf
                   in String.sub s 1 ((String.length s)-2)
                 ) )
-# 862 "lexer.ml"
+# 859 "lexer.ml"
 
   | 32 ->
-# 48 "lexer.mll"
+# 45 "lexer.mll"
                 ( EOF )
-# 867 "lexer.ml"
+# 864 "lexer.ml"
 
   | 33 ->
-# 49 "lexer.mll"
+# 46 "lexer.mll"
                 ( raise Lexical_error )
-# 872 "lexer.ml"
+# 869 "lexer.ml"
 
   | __ocaml_lex_state -> lexbuf.Lexing.refill_buff lexbuf;
       __ocaml_lex_token_rec lexbuf __ocaml_lex_state

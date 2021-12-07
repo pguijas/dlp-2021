@@ -23,11 +23,8 @@ Opcionales:
 
 DUDAS:
 
-* String concat, usamos tuplas?? usar concat de ocaml solo para el print. y cooncat del palo de concat(x,y) o x ^ y
-* id = (L x : Nat.{x,x});; (id 1).1;; -> tuplas corchetes en general
 * en la gramática hector metio las tuplas en appterm, estan bien mi senor??
 * en tmproj int / termino que sea un entero??
-* with NoRuleApplies -> 471
 * conflicto con STRING y cosas como LAMBDA o L
 
 TODO

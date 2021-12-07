@@ -72,7 +72,9 @@ appTerm :
   | appTerm atomicTerm
       { TmApp ($1, $2) }
   | atomicTerm DOT INTV
-      { TmProj ($1, $3) (* esto daba conflictos: term -> atomicTerm *)}
+      { TmProj ($1, $3)}
+  | atomicTerm UP atomicTerm
+      { TmConcat ($1, $3)}
 
 atomicTerm :
     LPAREN term RPAREN
