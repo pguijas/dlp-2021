@@ -1,4 +1,3 @@
-
 {
   open Parser;;
   exception Lexical_error;; 
@@ -21,7 +20,6 @@ rule token = parse
   | "in"        { IN }
   | "Bool"      { BOOL }
   | "Nat"       { NAT }
-  | "String"    { STRING }
   | "*"         { TPAIR }
   | '('         { LPAREN }
   | ')'         { RPAREN }
@@ -29,11 +27,9 @@ rule token = parse
   | '='         { EQ }
   | ':'         { COLON }
   | "->"        { ARROW }
-  | '^'         { UP }
   | '{'         { LBRACKET }
   | ','         { COMMA }
   | '}'         { RBRACKET }
-  | '"'         { QUOTE }
   | ['0'-'9']+  { INTV (int_of_string (Lexing.lexeme lexbuf)) }
   | ['a'-'z']['a'-'z' '_' '0'-'9']*
                 { STRINGV (
