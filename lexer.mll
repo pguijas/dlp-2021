@@ -33,7 +33,7 @@ rule token = parse
   | ['0'-'9']+  { INTV (int_of_string (Lexing.lexeme lexbuf)) }
   | ['a'-'z']['a'-'z' '_' '0'-'9']*
                 { STRINGV (Lexing.lexeme lexbuf) }
-  | "\""[^';''\"''\'']*"\""
-                { TSTR (Lexing.lexeme lexbuf) }
+  | '\"'[^';''\"''\'']*'\"'
+                { STRINGT (Lexing.lexeme lexbuf) }
   | eof         { EOF }
   | _           { raise Lexical_error } 
