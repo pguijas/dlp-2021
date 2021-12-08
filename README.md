@@ -6,8 +6,8 @@ Obligatorios (5 ptos +1 si ingles):
 
 * (Listo) Reconocimiento de expresiones multi-línea
 * (Listo) Incorporación de un punto fijo interno para declarar definiciones recursivas directas
-* (Listo) Incorporación de un contexto en la terminal -> contexto funcional 
-* Incorporación del tipo string: | TmConcat String + term (recursivo -> str + str + str + ...) .
+* (Listo) Incorporación de un contexto en la terminal -> contexto funcional
+* (SemiListo) Incorporación del tipo string: >> "a"^"a"^"a";; -> syntax error
 * (Listo) Incorporación de pares.
 * Memoria
 

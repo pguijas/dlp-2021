@@ -33,8 +33,6 @@ id_pair = L x:Nat*Nat. x;;
 
 
 Strings:
-"pedro huele a caca"
-a = "pedro huele a caca"
-(L x:String .x) "pedro huele a caca";;
-(L x:String .x) a;;
-{"pedro", "caca"}.1;;
+a = "pedro huele a caca";;
+str_id = (L x:String .x);;
+(str_id a)^(str_id a);;

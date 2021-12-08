@@ -517,9 +517,10 @@ let rec eval1 ctx tm = match tm with
 
   | TmVar x ->  (try getbinding_term ctx x 
                 with _ -> raise NoRuleApplies) (* REALMENTE INNECESARIO si no esta en ctx cascarian los tipos *)
-                (* 
-                
-                 *)
+          
+  | TmConcat (TmString(s1),TmString(s2)) ->  TmString(s1^s2)
+  | TmConcat (TmString(s),t1) -> let t1' = eval1 ctx t1 in TmConcat (TmString(s),t1')
+  | TmConcat (t1,t2) -> let t1' = eval1 ctx t1 in TmConcat (t1',t2)
 
   | _ ->
       raise NoRuleApplies
