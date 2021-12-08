@@ -36,3 +36,8 @@ Strings:
 a = "pedro huele a caca";;
 str_id = (L x:String .x);;
 (str_id a)^(str_id a);;
+
+[];;
+id = L x:Nat. x;;
+a=1;;
+[id 1, id 2, id 3, id a];;
