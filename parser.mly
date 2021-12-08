@@ -29,6 +29,8 @@
 %token LBRACKET
 %token COMMA
 %token RBRACKET
+%token RCORCHETE
+%token LCORCHETE
 %token QUOTE
 %token EOF
 
@@ -94,6 +96,12 @@ atomicTerm :
         in f $1 }
   | STRINGT
     { TmString $1 }
+  | LCORCHETE list { $2 }
+
+list:
+    RCORCHETE { TmEmptyList }
+  | appTerm RCORCHETE { TmList($1,TmEmptyList) }
+  | appTerm COMMA list { TmList($1,$3) }
 
 ty :
     atomicTy

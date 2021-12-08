@@ -33,6 +33,8 @@ rule token = parse
   | '{'         { LBRACKET }
   | ','         { COMMA }
   | '}'         { RBRACKET }
+  | '['         { LCORCHETE }
+  | ']'         { RCORCHETE }
   | '"'         { QUOTE }
   | ['0'-'9']+  { INTV (int_of_string (Lexing.lexeme lexbuf)) }
   | ['a'-'z']['a'-'z' '_' '0'-'9']*

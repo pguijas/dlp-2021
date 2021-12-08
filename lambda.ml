@@ -36,6 +36,8 @@ type ty =
   | TyArr of ty * ty (* arrow type *)
   | TyPair of ty * ty
   | TyString
+  | TyEmptyList
+  | TyList of ty
 ;;
 
 
@@ -57,7 +59,11 @@ type term =
   | TmProj of term * int
   | TmString of string
   | TmConcat of term * term
+  | TmList of term * term
+  | TmEmptyList
 ;;
+
+
 
 (* Command *)
 type command =
@@ -114,6 +120,11 @@ let rec string_of_ty ty = match ty with
       "(" ^ string_of_ty ty1 ^ ")" ^ " -> " ^ "(" ^ string_of_ty ty2 ^ ")"
   | TyPair (ty1, ty2) ->
       "(" ^ string_of_ty ty1 ^ " * " ^ string_of_ty ty2 ^ ")"
+  | TyEmptyList ->
+      "empty list"(* Mirar de ponerle un print guapo *)
+  | TyList ty -> string_of_ty ty ^ " list"
+      
+      
 ;;
 
 let rec string_of_term = function
@@ -160,6 +171,17 @@ let rec string_of_term = function
   *)
   | TmProj (t, n) -> 
       string_of_term t ^ "." ^ (string_of_int n)
+
+  
+  | TmList (h,t) ->
+      let rec print = function
+        TmEmptyList -> ""
+        |TmList (h,TmEmptyList) -> string_of_term h
+        |TmList (h,t) -> (string_of_term h) ^ ", "
+        | _ -> ""(* AQUI NUNCA SE LLEGA *)
+      in "[" ^ (print (TmList (h,t))) ^ "]"
+  
+  | TmEmptyList -> "[]" (* como se metia en ocaml 2 cabezas de regla para 1 regla? *)
 ;;
 
 
@@ -265,6 +287,14 @@ let rec typeof ctx tm = match tm with
         | (TyPair (_, _), _) -> raise (Type_error "tuple out of bounds")
         | (x, _) -> raise (Type_error ("cannot project type " ^ string_of_ty x))
         )
+
+  | TmList (h,t)->
+      let tyTh = typeof ctx h in
+        let tyTt = typeof ctx t in
+          if (tyTt = TyList(tyTh)) || (tyTt = TyEmptyList) then TyList(tyTh)
+          else raise (Type_error "elements of list have different types")
+
+  | TmEmptyList -> TyEmptyList
 ;;
 
 
@@ -316,6 +346,8 @@ let rec free_vars tm = match tm with
   | TmPair (t1, t2) ->
       lunion (free_vars t1) (free_vars t2)
   | TmProj (t, n) -> free_vars t
+  | TmEmptyList -> []
+  | TmList (h,t)-> lunion (free_vars h) (free_vars t)
 
 ;;
 
@@ -393,7 +425,9 @@ let rec subst ctx x s tm = match tm with
   (* TODO: revisar *)
   | TmPair (t1, t2) -> TmPair ((subst ctx x s t1), (subst ctx x s t2))
   | TmProj (t, n)   -> TmProj (subst ctx x s t, n)
-
+  | TmEmptyList -> TmEmptyList
+  | TmList (h,t)-> TmList ((subst ctx x s h), (subst ctx x s t))
+;;
 
 let rec isnumericval tm = match tm with
     TmZero -> true
@@ -547,6 +581,9 @@ let rec subs_ctx ctx tm vl = match tm with
   | TmFix t ->  TmFix (subs_ctx ctx t vl)
   | TmPair (t1, t2) -> TmPair ((subs_ctx ctx t1 vl), (subs_ctx ctx t2 vl))
   | TmProj (t, proj) -> TmProj (subs_ctx ctx t vl, proj)
+  | TmEmptyList -> TmEmptyList
+  | TmList (h,t) -> TmList (subs_ctx ctx h vl,subs_ctx ctx t vl)
+
 ;;
 
 (* Evaluate until no more terms can be evaluated *)

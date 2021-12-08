@@ -25,6 +25,8 @@ type token =
   | LBRACKET
   | COMMA
   | RBRACKET
+  | RCORCHETE
+  | LCORCHETE
   | QUOTE
   | EOF
   | INTV of (int)
