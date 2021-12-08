@@ -177,7 +177,7 @@ let rec string_of_term = function
       let rec print = function
         TmEmptyList -> ""
         |TmList (h,TmEmptyList) -> string_of_term h
-        |TmList (h,t) -> (string_of_term h) ^ ", "
+        |TmList (h,t) -> (string_of_term h) ^ ", " ^ (print t)
         | _ -> ""(* AQUI NUNCA SE LLEGA *)
       in "[" ^ (print (TmList (h,t))) ^ "]"
   
