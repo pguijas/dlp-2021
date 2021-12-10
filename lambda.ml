@@ -28,6 +28,7 @@
     - : ((Nat * Nat)) -> ((Nat * Nat)) = (lambda x:(Nat * Nat). x)
 *)
 
+
 (***********************************TYPES***********************************)
 (* Base Types *)
 type ty =
@@ -600,11 +601,11 @@ let rec subs_ctx ctx tm vl = match tm with
 ;;
 
 (* Evaluate until no more terms can be evaluated *)
-let rec eval ctx tm =
+let rec eval ctx tm d =
   try
     let tm' = eval1 ctx tm in
-      print_endline ("\t" ^ string_of_term (tm') ^ " : (falta meter el tipo)");
-      eval ctx tm'
+      if (d) then print_endline ("\t" ^ string_of_term (tm') ^ " : (falta meter el tipo)");
+      eval ctx tm' d
   with
     NoRuleApplies -> subs_ctx ctx tm []
 ;;

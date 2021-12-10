@@ -52,5 +52,5 @@ val typeof : context -> term -> ty;;
 
 val string_of_term : term -> string;;
 exception NoRuleApplies;;
-val eval : context -> term -> term;;
+val eval : context -> term -> bool -> term;;
 

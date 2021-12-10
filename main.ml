@@ -6,11 +6,21 @@ open Lambda;;
 open Parser;;
 open Lexer;;
 
+
+let usage_msg = "top [--debug]"
+let debug = ref false
+let input_files = ref []
+let output_file = ref ""
+let anon_fun filename =
+       input_files := filename::!input_files
+let speclist = [("--debug", Arg.Set debug, "Output debug information"); ("-d", Arg.Set debug, "Output debug information")]
+
 (* 
   que utilidad tiene que el contexto este fijado en el bucle si siempre es el mismo
 *)
 
 (* Esta funcion tragará hasta ;; *)
+
 
 exception Not_Ending;;
 
@@ -34,10 +44,10 @@ let rec exec exp ctx = match exp with
   | h::t -> 
       match s token (from_string (h)) with
         | Eval tm  -> 
-            print_endline ("- : " ^ (string_of_ty (typeof ctx tm)) ^ " = " ^ string_of_term (eval ctx tm));
+            print_endline ("- : " ^ (string_of_ty (typeof ctx tm)) ^ " = " ^ string_of_term (eval ctx tm (!debug)));
             exec t ctx
         | Bind (name,tm) -> 
-            let tm_eval = eval ctx tm in
+            let tm_eval = eval ctx tm (!debug) in
               print_endline ("val " ^ name ^ " : " ^ (string_of_ty (typeof ctx tm)) ^ " = " ^ string_of_term (tm_eval) );
               exec t (addbinding ctx name (typeof ctx tm) (tm_eval)) 
 ;;
@@ -68,6 +78,7 @@ let top_level_loop () =
     loop emptyctx
   ;;
 
+Arg.parse speclist anon_fun usage_msg;
 top_level_loop ()
 ;;
 
