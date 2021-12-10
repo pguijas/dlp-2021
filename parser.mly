@@ -75,7 +75,7 @@ appTerm :
       { TmApp ($1, $2) }
   | atomicTerm DOT INTV
       { TmProj ($1, $3)}
-  | atomicTerm UP atomicTerm
+  | appTerm UP atomicTerm
       { TmConcat ($1, $3)}
 
 atomicTerm :

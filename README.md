@@ -7,7 +7,7 @@ Obligatorios (5 ptos +1 si ingles):
 * (Listo) Reconocimiento de expresiones multi-línea
 * (Listo) Incorporación de un punto fijo interno para declarar definiciones recursivas directas
 * (Listo) Incorporación de un contexto en la terminal -> contexto funcional
-* (SemiListo) Incorporación del tipo string: >> "a"^"a"^"a";; -> syntax error
+* (SemiListo) Incorporación del tipo string: >> "a"^"a"^"a";; -> syntax error (ok)
 * (Listo) Incorporación de pares.
 * Memoria
 
