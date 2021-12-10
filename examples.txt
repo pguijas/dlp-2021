@@ -47,4 +47,12 @@ letrec sum : Nat -> Nat -> Nat =
 lambda n : Nat. lambda m : Nat. if iszero n then m else succ (sum (pred n) m) in
 letrec mult : Nat -> Nat -> Nat =
 lambda n : Nat. lambda m : Nat. if iszero n then 0 else sum (mult (pred n) m) m in
-mult 2 3
+mult 2 3;;
+
+Fibonacci:
+letrec sum : Nat -> Nat -> Nat =                                      
+lambda n : Nat. lambda m : Nat. if iszero n then m else succ (sum (pred n) m) in
+letrec fib : Nat -> Nat =
+lambda n : Nat. if iszero n then 0 else if iszero (pred n) then 1 else
+sum (fib (pred (pred n))) (fib (pred n))
+in fib 4;;
