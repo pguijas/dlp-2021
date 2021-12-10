@@ -557,6 +557,16 @@ let rec eval1 ctx tm = match tm with
   | TmConcat (TmString(s1),TmString(s2)) ->  TmString(s1^s2)
   | TmConcat (TmString(s),t1) -> let t1' = eval1 ctx t1 in TmConcat (TmString(s),t1')
   | TmConcat (t1,t2) -> let t1' = eval1 ctx t1 in TmConcat (t1',t2)
+  (* no queda más bonito asi :p?
+  | TmConcat (s1, s2) -> (match (s1, s2) with
+      (TmString(s1),TmString(s2)) ->  TmString(s1^s2)
+      | (TmString(s11), t2) -> 
+          let t2' = eval1 ctx t2 in
+          TmConcat (TmString(s11), t2')
+      | (t1, t2) -> 
+          let t1' = eval1 ctx t1 in
+          TmConcat (t1', t2)
+    )*)
   | TmList(h,t) when isval h -> TmList(h,(eval1 ctx t))
   | TmList(h,t) -> TmList((eval1 ctx h),t)
   | _ ->
