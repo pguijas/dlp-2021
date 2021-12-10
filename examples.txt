@@ -41,3 +41,10 @@ str_id = (L x:String .x);;
 id = L x:Nat. x;;
 a=1;;
 [id 1, id 2, id 3, id a];;
+
+Multiplicacion:
+letrec sum : Nat -> Nat -> Nat =                                      
+lambda n : Nat. lambda m : Nat. if iszero n then m else succ (sum (pred n) m) in
+letrec mult : Nat -> Nat -> Nat =
+lambda n : Nat. lambda m : Nat. if iszero n then 0 else sum (mult (pred n) m) m in
+mult 2 3
