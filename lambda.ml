@@ -604,7 +604,7 @@ let rec subs_ctx ctx tm vl = match tm with
 let rec eval ctx tm d =
   try
     let tm' = eval1 ctx tm in
-      if (d) then print_endline ("\t" ^ string_of_term (tm') ^ " : (falta meter el tipo)");
+      if (d) then print_endline ("\t" ^ string_of_term (tm'));
       eval ctx tm' d
   with
     NoRuleApplies -> subs_ctx ctx tm []
