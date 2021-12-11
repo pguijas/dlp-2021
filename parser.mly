@@ -17,6 +17,7 @@
 %token BOOL
 %token NAT
 %token TPAIR
+%token LIST
 %token STRING
 
 %token LPAREN
@@ -31,6 +32,11 @@
 %token RBRACKET
 %token RCORCHETE
 %token LCORCHETE
+%token NIL
+%token CONS
+%token ISNIL
+%token HEAD
+%token TAIL
 %token QUOTE
 %token EOF
 
@@ -77,6 +83,16 @@ appTerm :
       { TmProj ($1, $3)}
   | appTerm UP atomicTerm
       { TmConcat ($1, $3)}
+  | NIL LCORCHETE ty RCORCHETE
+      { TmNil $3 }
+  | CONS LCORCHETE ty RCORCHETE atomicTerm atomicTerm
+      { TmCons ($3, $5, $6) }
+  | ISNIL LCORCHETE ty RCORCHETE atomicTerm
+      { TmIsNil ($3, $5)}
+  | HEAD LCORCHETE ty RCORCHETE atomicTerm
+      { TmHead ($3, $5)}
+  | TAIL LCORCHETE ty RCORCHETE atomicTerm
+      { TmTail ($3, $5)}
 
 atomicTerm :
     LPAREN term RPAREN
@@ -96,12 +112,6 @@ atomicTerm :
         in f $1 }
   | STRINGT
     { TmString $1 }
-  | LCORCHETE list { $2 }
-
-list:
-    RCORCHETE { TmEmptyList }
-  | appTerm RCORCHETE { TmList($1,TmEmptyList) }
-  | appTerm COMMA list { TmList($1,$3) }
 
 ty :
     atomicTy
@@ -110,6 +120,8 @@ ty :
       { TyArr ($1, $3) }
   | atomicTy TPAIR atomicTy
       { TyPair ($1, $3) }
+  | atomicTy LIST
+      { TyList $1 }
 
 atomicTy :
     LPAREN ty RPAREN  

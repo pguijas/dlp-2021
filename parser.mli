@@ -14,6 +14,7 @@ type token =
   | BOOL
   | NAT
   | TPAIR
+  | LIST
   | STRING
   | LPAREN
   | RPAREN
@@ -27,6 +28,11 @@ type token =
   | RBRACKET
   | RCORCHETE
   | LCORCHETE
+  | NIL
+  | CONS
+  | ISNIL
+  | HEAD
+  | TAIL
   | QUOTE
   | EOF
   | INTV of (int)

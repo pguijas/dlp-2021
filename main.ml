@@ -63,9 +63,6 @@ let top_level_loop () =
      | Parse_error ->
          print_endline "syntax error";
          loop ctx
-     | OutOfBounds ->
-         print_endline "index out of bounds";
-         loop ctx
      | Type_error e ->
          print_endline ("type error: " ^ e);
          loop ctx

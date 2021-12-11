@@ -1,14 +1,11 @@
-
 type ty =
     TyBool
   | TyNat
-  | TyArr of ty * ty
+  | TyArr of ty * ty (* arrow type *)
   | TyPair of ty * ty
   | TyString
-  | TyEmptyList
   | TyList of ty
 ;;
-
 
 type term =
     TmTrue
@@ -27,8 +24,11 @@ type term =
   | TmProj of term * int
   | TmString of string
   | TmConcat of term * term
-  | TmList of term * term
-  | TmEmptyList
+  | TmNil of ty
+  | TmCons of ty * term * term
+  | TmIsNil of ty * term
+  | TmHead of ty * term
+  | TmTail of ty * term
 ;;
 
 type command =
@@ -52,6 +52,5 @@ val typeof : context -> term -> ty;;
 
 val string_of_term : term -> string;;
 exception NoRuleApplies;;
-exception OutOfBounds;;
 val eval : context -> term -> bool -> term;;
 

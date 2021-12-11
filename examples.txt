@@ -37,10 +37,17 @@ a = "pedro huele a caca";;
 str_id = (L x:String .x);;
 (str_id a)^(str_id a);;
 
-[];;
+Listas:
+nil[Nat];;
 id = L x:Nat. x;;
 a=1;;
-[id 1, id 2, id 3, id a];;
+lista = (cons[Nat] (id 1) (cons[Nat] (id 2) (cons[Nat] (id a) (nil[Nat]))));;
+letrec len : (Nat list) -> Nat = lambda l : Nat list. if (isnil[Nat] l) then 0 else (succ (len (tail[Nat] l)))
+in len lista;;
+
+letrec len : (Nat list) -> Nat = lambda l : Nat list. if (isnil[Nat] l) then 0 else ((len (tail[Nat] l)) + 1)
+in len (nil[Nat]);;
+
 
 Multiplicacion:
 letrec sum : Nat -> Nat -> Nat =                                      
@@ -51,11 +58,11 @@ mult 2 3;;
 
 Fibonacci:
 letrec sum : Nat -> Nat -> Nat =                                      
-lambda n : Nat. lambda m : Nat. if iszero n then m else succ (sum (pred n) m) in
-letrec fib : Nat -> Nat =
-lambda n : Nat. if iszero n then 0 else if iszero (pred n) then 1 else
-sum (fib (pred (pred n))) (fib (pred n))
-in fib 4;;
+        lambda n : Nat. lambda m : Nat. if iszero n then m else succ (sum (pred n) m) in
+        letrec fib : Nat -> Nat =
+                lambda n : Nat. if iszero n then 0 else if iszero (pred n) then 1 else
+                sum (fib (pred (pred n))) (fib (pred n))
+                in fib 4;;
 
 
 test debug:

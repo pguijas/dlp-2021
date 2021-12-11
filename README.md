@@ -7,24 +7,26 @@ Obligatorios (5 ptos +1 si ingles):
 * (Listo) Reconocimiento de expresiones multi-línea
 * (Listo) Incorporación de un punto fijo interno para declarar definiciones recursivas directas
 * (Listo) Incorporación de un contexto en la terminal -> contexto funcional
-* (SemiListo) Incorporación del tipo string: >> "a"^"a"^"a";; -> syntax error (ok)
+* (Listo) Incorporación del tipo string: >> "a"^"a"^"a";; -> syntax error (ok)
 * (Listo) Incorporación de pares.
 * Memoria
 
 Opcionales:
 
-* (0.75) Reconocimiento de expresiones desde fichero
-* (1.50) pretty-printer
 * (0.25) modo debug
-* (1.50) ındicesdeDeBruijn
-* (1.00) registros
-* (1.00) listas
+* (1.00) registros -> pendiente de duda graña
+* (1.00) listas -> cabeza ( head() o .hd ), cola( tail() o .tl) y es vacía -> (me confundí y hice la proyección tambien, pero queda para los registros)
 * (2.00) subtipado
 
 DUDAS:
 
 * en tmproj string
-* el casque de listas y out of bounds casca en el eval no??
+* el casque de resistros y out of bounds casca en el eval no??
+* construir las listas es un puto coñazo
+
+Datos:
+
+* no usar palabra reservada list, he pecado :()
 
 TODO
 

@@ -37,31 +37,39 @@ type ty =
   | TyArr of ty * ty (* arrow type *)
   | TyPair of ty * ty
   | TyString
-  | TyEmptyList
   | TyList of ty
 ;;
 
 
 (* Términos *)
 type term =
+  (* Bools *)
     TmTrue
   | TmFalse
   | TmIf of term * term * term
+  (* Nats *)
   | TmZero
   | TmSucc of term
   | TmPred of term
   | TmIsZero of term
+  (* Lambda Basics *)
   | TmVar of string
   | TmAbs of string * ty * term
   | TmApp of term * term
   | TmLetIn of string * term * term
   | TmFix of term
+  (* Pairs *)
   | TmPair of term * term
   | TmProj of term * int
+  (* Strings *)
   | TmString of string
   | TmConcat of term * term
-  | TmList of term * term
-  | TmEmptyList
+  (* Lists *)
+  | TmNil of ty
+  | TmCons of ty * term * term
+  | TmIsNil of ty * term
+  | TmHead of ty * term
+  | TmTail of ty * term
 ;;
 
 
@@ -121,8 +129,6 @@ let rec string_of_ty ty = match ty with
       "(" ^ string_of_ty ty1 ^ ")" ^ " -> " ^ "(" ^ string_of_ty ty2 ^ ")"
   | TyPair (ty1, ty2) ->
       "(" ^ string_of_ty ty1 ^ " * " ^ string_of_ty ty2 ^ ")"
-  | TyEmptyList ->
-      "empty list"(* Mirar de ponerle un print guapo *)
   | TyList ty -> string_of_ty ty ^ " list"
       
       
@@ -162,7 +168,7 @@ let rec string_of_term = function
   | TmLetIn (s, t1, t2) ->
       "let " ^ s ^ " = " ^ string_of_term t1 ^ " in " ^ string_of_term t2
   | TmFix (t) ->
-      "(fix " ^ string_of_term t ^ ")"
+      "fix (" ^ string_of_term t ^ ")"
   | TmPair (t1, t2) ->
       "{" ^ string_of_term t1 ^ " , " ^ string_of_term t2 ^ "}"
   (* 
@@ -173,16 +179,11 @@ let rec string_of_term = function
   | TmProj (t, n) -> 
       string_of_term t ^ "." ^ (string_of_int n)
 
-  
-  | TmList (h,t) ->
-      let rec print = function
-        TmEmptyList -> ""
-        |TmList (h,TmEmptyList) -> string_of_term h
-        |TmList (h,t) -> (string_of_term h) ^ ", " ^ (print t)
-        | _ -> ""(* AQUI NUNCA SE LLEGA *)
-      in "[" ^ (print (TmList (h,t))) ^ "]"
-  
-  | TmEmptyList -> "[]" (* como se metia en ocaml 2 cabezas de regla para 1 regla? *)
+  | TmNil ty        -> "nil[" ^ string_of_ty ty ^ "]" 
+  | TmCons (ty,h,t) -> "cons[" ^ string_of_ty ty ^ "] " ^ "(" ^ string_of_term h ^ " " ^ (string_of_term t) ^ ")"
+  | TmIsNil (ty,t)  -> "isnil[" ^ string_of_ty ty ^ "] " ^ "(" ^ string_of_term t ^ ")"
+  | TmHead (ty,t)   -> "head[" ^ string_of_ty ty ^ "] " ^ "(" ^ string_of_term t ^ ")"
+  | TmTail (ty,t)   -> "tail[" ^ string_of_ty ty ^ "] " ^ "(" ^ string_of_term t ^ ")"
 ;;
 
 
@@ -289,14 +290,30 @@ let rec typeof ctx tm = match tm with
         | (TyList (ty), _) -> ty
         | (x, _) -> raise (Type_error ("cannot project type " ^ string_of_ty x))
         )
-
-  | TmList (h,t)->
+  (* T-Nil *)
+  | TmNil ty -> TyList ty
+  
+  (* T-Cons *)
+  | TmCons (ty,h,t) ->
       let tyTh = typeof ctx h in
         let tyTt = typeof ctx t in
-          if (tyTt = TyList(tyTh)) || (tyTt = TyEmptyList) then TyList(tyTh)
+          if (tyTh = ty) && (tyTt = TyList(ty)) then TyList(ty)
           else raise (Type_error "elements of list have different types")
-
-  | TmEmptyList -> TyEmptyList
+  
+  (* T-IsNil *)
+  | TmIsNil (ty,t) -> 
+    if typeof ctx t = TyList(ty) then TyBool
+    else raise (Type_error ("argument of isempty is not a " ^ (string_of_ty ty) ^ " list"))
+ 
+  (* T-Head *)    
+  | TmHead (ty,t) ->     
+    if typeof ctx t = TyList(ty) then ty
+    else raise (Type_error ("argument of head is not a " ^ (string_of_ty ty) ^ " list"))
+    
+  (* T-Tail *)    
+  | TmTail (ty,t) -> 
+    if typeof ctx t = TyList(ty) then TyList(ty)
+    else raise (Type_error ("argument of tail is not a " ^ (string_of_ty ty) ^ " list"))
 ;;
 
 
@@ -347,10 +364,18 @@ let rec free_vars tm = match tm with
   (* TODO: revisar *)
   | TmPair (t1, t2) ->
       lunion (free_vars t1) (free_vars t2)
-  | TmProj (t, n) -> free_vars t
-  | TmEmptyList -> []
-  | TmList (h,t)-> lunion (free_vars h) (free_vars t)
-
+  | TmProj (t, n) -> 
+      free_vars t
+  | TmNil ty -> 
+      []
+  | TmCons (ty,t1,t2) -> 
+      lunion (free_vars t1) (free_vars t2)
+  | TmIsNil (ty,t) ->
+      free_vars t
+  | TmHead (ty,t) ->
+      free_vars t
+  | TmTail (ty,t) ->
+      free_vars t
 ;;
 
 (*
@@ -403,9 +428,7 @@ let rec subst ctx x s tm = match tm with
       (* Esto va en el eval no en el subs  *)
       (*(try getbinding_term ctx x with _ -> tm)
          acabar de hacer *)
-        
-
-      
+             
   | TmAbs (y, tyY, t) -> 
       if y = x then tm
       else let fvs = free_vars s in
@@ -425,10 +448,21 @@ let rec subst ctx x s tm = match tm with
   | TmFix t -> 
       TmFix (subst ctx x s t)
   (* TODO: revisar *)
-  | TmPair (t1, t2) -> TmPair ((subst ctx x s t1), (subst ctx x s t2))
-  | TmProj (t, n)   -> TmProj (subst ctx x s t, n)
-  | TmEmptyList -> TmEmptyList
-  | TmList (h,t)-> TmList ((subst ctx x s h), (subst ctx x s t))
+  | TmPair (t1, t2) -> 
+      TmPair ((subst ctx x s t1), (subst ctx x s t2))
+  | TmProj (t, n) -> 
+      TmProj (subst ctx x s t, n)
+  | TmNil ty -> 
+      tm
+  | TmCons (ty,t1,t2) -> 
+      TmCons (ty, (subst ctx x s t1), (subst ctx x s t2))
+  | TmIsNil (ty,t) ->
+      TmIsNil (ty, (subst ctx x s t))
+  | TmHead (ty,t) ->
+      TmHead (ty, (subst ctx x s t))
+  | TmTail (ty,t) ->
+      TmTail (ty, (subst ctx x s t))
+
 ;;
 
 let rec isnumericval tm = match tm with
@@ -444,14 +478,13 @@ let rec isval tm = match tm with
   | TmAbs _ -> true
   | TmString _ -> true
   | TmPair(t1,t2) -> (isval t1) && (isval t2)
-  | TmEmptyList -> true
-  | TmList(h,t) -> (isval h) && (isval t)
+  | TmNil _ -> true
+  | TmCons(_,h,t) -> (isval h) && (isval t)
   | t when isnumericval t -> true
   | _ -> false
 ;;
 
 exception NoRuleApplies;;
-exception OutOfBounds;;
 
 (* Evaluamos *)
 let rec eval1 ctx tm = match tm with
@@ -546,13 +579,14 @@ let rec eval1 ctx tm = match tm with
         (TmPair (t1, _), 1) -> t1
         (* E-PairBeta2 *)
         | (TmPair (_, t2), 2) -> t2
-        (* E-PairBetaN *)
+        (* E-PairBetaN -> logica similar para registros
         | (TmList (_, _), _) -> 
           (let rec get_term t n = match (t, n) with
             | (TmList (h, _), 1) -> h
             | (TmList (h, t), n) when n>1 -> get_term t (n-1)
             | _ -> raise OutOfBounds
           in get_term t n)
+        *)
         (*
         
           let rec get_term = funcion
@@ -577,8 +611,26 @@ let rec eval1 ctx tm = match tm with
   | TmConcat (TmString(s1),TmString(s2)) ->  TmString(s1^s2)
   | TmConcat (TmString(s),t1) -> let t1' = eval1 ctx t1 in TmConcat (TmString(s),t1')
   | TmConcat (t1,t2) -> let t1' = eval1 ctx t1 in TmConcat (t1',t2)
-  | TmList(h,t) when isval h -> TmList(h,(eval1 ctx t))
-  | TmList(h,t) -> TmList((eval1 ctx h),t)
+
+
+  (* E-Cons2 *)
+  | TmCons(ty,h,t) when isval h -> TmCons(ty,h,(eval1 ctx t)) 
+  (* E-Cons1 *)
+  | TmCons(ty,h,t) -> TmCons(ty,(eval1 ctx h),t)
+  (* E-IsNilNil *)
+  | TmIsNil(ty,TmNil(_)) -> TmTrue  
+  (* E-IsNilCons *)
+  | TmIsNil(ty,TmCons(_,_,_)) -> TmFalse
+  (* E-IsNil *)
+  | TmIsNil(ty,t) -> TmIsNil(ty,eval1 ctx t)
+  (* E-HeadCons *)
+  | TmHead(ty,TmCons(_,h,_)) -> h
+  (* E-Head *)
+  | TmHead(ty,t) -> TmHead(ty,eval1 ctx t)
+  (* E-TailCons *)
+  | TmTail(ty,TmCons(_,_,t)) -> t
+  (* E-Tail *)
+  | TmTail(ty,t) -> TmTail(ty,eval1 ctx t)
   | _ ->
       raise NoRuleApplies
 ;;
@@ -604,8 +656,11 @@ let rec subs_ctx ctx tm vl = match tm with
   | TmFix t ->  TmFix (subs_ctx ctx t vl)
   | TmPair (t1, t2) -> TmPair ((subs_ctx ctx t1 vl), (subs_ctx ctx t2 vl))
   | TmProj (t, proj) -> TmProj (subs_ctx ctx t vl, proj)
-  | TmEmptyList -> TmEmptyList
-  | TmList (h,t) -> TmList (subs_ctx ctx h vl,subs_ctx ctx t vl)
+  | TmNil ty -> TmNil ty
+  | TmCons (ty,t1,t2) -> TmCons (ty,subs_ctx ctx t1 vl,subs_ctx ctx t2 vl) 
+  | TmIsNil (ty,t) -> TmIsNil (ty,subs_ctx ctx t vl)
+  | TmHead (ty,t) -> TmHead (ty,subs_ctx ctx t vl)
+  | TmTail (ty,t) -> TmTail (ty,subs_ctx ctx t vl) 
 
 ;;
 

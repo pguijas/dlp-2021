@@ -23,6 +23,7 @@ rule token = parse
   | "Nat"       { NAT }
   | "String"    { STRING }
   | "*"         { TPAIR }
+  | "list"         { LIST }
   | '('         { LPAREN }
   | ')'         { RPAREN }
   | '.'         { DOT }
@@ -33,8 +34,14 @@ rule token = parse
   | '{'         { LBRACKET }
   | ','         { COMMA }
   | '}'         { RBRACKET }
+  | "nil"       { NIL }
+  | "cons"      { CONS }
   | '['         { LCORCHETE }
   | ']'         { RCORCHETE }
+  | "isnil"     { ISNIL }
+  | "head"      { HEAD }
+  | "tail"      { TAIL }
+
   | '"'         { QUOTE }
   | ['0'-'9']+  { INTV (int_of_string (Lexing.lexeme lexbuf)) }
   | ['a'-'z']['a'-'z' '_' '0'-'9']*
