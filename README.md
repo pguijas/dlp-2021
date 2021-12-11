@@ -32,6 +32,7 @@ TODO
 
 * Esciribir en el fichero examples.txt -> ejemplos adicionales que involucren doble recursividad a partir de la suma (Fibonacci)
 * revisar todo el código y pulirlo (antes de la ultima clase), mucho comentario y mucha mierda
+* hacer el map de listas
 
 MEMORIA
 
