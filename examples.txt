@@ -45,10 +45,6 @@ lista = (cons[Nat] (id 1) (cons[Nat] (id 2) (cons[Nat] (id a) (nil[Nat]))));;
 letrec len : (Nat list) -> Nat = lambda l : Nat list. if (isnil[Nat] l) then 0 else (succ (len (tail[Nat] l)))
 in len lista;;
 
-letrec len : (Nat list) -> Nat = lambda l : Nat list. if (isnil[Nat] l) then 0 else ((len (tail[Nat] l)) + 1)
-in len (nil[Nat]);;
-
-
 Multiplicacion:
 letrec sum : Nat -> Nat -> Nat =                                      
 lambda n : Nat. lambda m : Nat. if iszero n then m else succ (sum (pred n) m) in
