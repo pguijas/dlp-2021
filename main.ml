@@ -15,15 +15,9 @@ let anon_fun filename =
        input_files := filename::!input_files
 let speclist = [("--debug", Arg.Set debug, "Output debug information"); ("-d", Arg.Set debug, "Output debug information")]
 
-(* 
-  que utilidad tiene que el contexto este fijado en el bucle si siempre es el mismo
-*)
-
-(* Esta funcion tragará hasta ;; *)
-
-
 exception Not_Ending;;
 
+(* Esta funcion tragará hasta ;; *)
 let rec check_exp l p = match l with
   | ""::[]    -> raise (Not_Ending) (* when the expresion ends with ; (not ;;)*)
   | []        -> raise (Not_Ending)
@@ -68,6 +62,9 @@ let top_level_loop () =
          loop ctx
      | Parse_error ->
          print_endline "syntax error";
+         loop ctx
+     | OutOfBounds ->
+         print_endline "index out of bounds";
          loop ctx
      | Type_error e ->
          print_endline ("type error: " ^ e);

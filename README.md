@@ -23,9 +23,8 @@ Opcionales:
 
 DUDAS:
 
-* en la gramática hector metio las tuplas en appterm, estan bien mi senor??
-* en tmproj int / termino que sea un entero??
-* conflicto con STRING y cosas como LAMBDA o L
+* en tmproj string
+* el casque de listas y out of bounds casca en el eval no??
 
 TODO
 

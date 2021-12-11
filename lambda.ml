@@ -286,6 +286,7 @@ let rec typeof ctx tm = match tm with
         (TyPair (ty1, _), 1) -> ty1
         | (TyPair (_, ty2), 2) -> ty2
         | (TyPair (_, _), _) -> raise (Type_error "tuple out of bounds")
+        | (TyList (ty), _) -> ty
         | (x, _) -> raise (Type_error ("cannot project type " ^ string_of_ty x))
         )
 
@@ -449,8 +450,8 @@ let rec isval tm = match tm with
   | _ -> false
 ;;
 
-exception NoRuleApplies
-;;
+exception NoRuleApplies;;
+exception OutOfBounds;;
 
 (* Evaluamos *)
 let rec eval1 ctx tm = match tm with
@@ -545,7 +546,25 @@ let rec eval1 ctx tm = match tm with
         (TmPair (t1, _), 1) -> t1
         (* E-PairBeta2 *)
         | (TmPair (_, t2), 2) -> t2
-        (* E-Proj1-2 *)
+        (* E-PairBetaN *)
+        | (TmList (_, _), _) -> 
+          (let rec get_term t n = match (t, n) with
+            | (TmList (h, _), 1) -> h
+            | (TmList (h, t), n) when n>1 -> get_term t (n-1)
+            | _ -> raise OutOfBounds
+          in get_term t n)
+        (*
+        
+          let rec get_term = funcion
+            | (TmList (h, _), 0) -> h
+            | (TmList (h, t), n) when n>0 -> get_term (t,(n-1))
+            | _ -> raise OutOfBounds
+          in get_term (t,n)
+        
+         *)
+
+
+        (* E-Proj *)
         | (t, n) -> 
           let t' = eval1 ctx t in 
           TmProj (t', n)
@@ -558,16 +577,6 @@ let rec eval1 ctx tm = match tm with
   | TmConcat (TmString(s1),TmString(s2)) ->  TmString(s1^s2)
   | TmConcat (TmString(s),t1) -> let t1' = eval1 ctx t1 in TmConcat (TmString(s),t1')
   | TmConcat (t1,t2) -> let t1' = eval1 ctx t1 in TmConcat (t1',t2)
-  (* no queda más bonito asi :p?
-  | TmConcat (s1, s2) -> (match (s1, s2) with
-      (TmString(s1),TmString(s2)) ->  TmString(s1^s2)
-      | (TmString(s11), t2) -> 
-          let t2' = eval1 ctx t2 in
-          TmConcat (TmString(s11), t2')
-      | (t1, t2) -> 
-          let t1' = eval1 ctx t1 in
-          TmConcat (t1', t2)
-    )*)
   | TmList(h,t) when isval h -> TmList(h,(eval1 ctx t))
   | TmList(h,t) -> TmList((eval1 ctx h),t)
   | _ ->
