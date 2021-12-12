@@ -5,6 +5,7 @@ type ty =
   | TyPair of ty * ty
   | TyString
   | TyList of ty
+  | TyRecord of (string * ty) list
 ;;
 
 type term =
@@ -21,14 +22,15 @@ type term =
   | TmLetIn of string * term * term
   | TmFix of term
   | TmPair of term * term
-  | TmProj of term * int
+  | TmProj of term * string
   | TmString of string
   | TmConcat of term * term
   | TmNil of ty
   | TmCons of ty * term * term
   | TmIsNil of ty * term
   | TmHead of ty * term
-  | TmTail of ty * term
+  | TmTail of ty * term  
+  | TmRecord of (string * term) list
 ;;
 
 type command =

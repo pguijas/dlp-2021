@@ -80,6 +80,8 @@ appTerm :
   | appTerm atomicTerm
       { TmApp ($1, $2) }
   | atomicTerm DOT INTV
+      { TmProj ($1, (string_of_int $3))}
+  | atomicTerm DOT STRINGV
       { TmProj ($1, $3)}
   | appTerm UP atomicTerm
       { TmConcat ($1, $3)}
@@ -112,6 +114,13 @@ atomicTerm :
         in f $1 }
   | STRINGT
     { TmString $1 }
+  | LBRACKET recordTM
+    { TmRecord $2 }
+
+recordTM:
+   | RBRACKET { [] }
+   | STRINGV EQ appTerm RBRACKET { [($1,$3)] }
+   | STRINGV EQ appTerm COMMA recordTM { (($1,$3)::($5)) }
 
 ty :
     atomicTy
@@ -132,3 +141,10 @@ atomicTy :
       { TyNat }
   | STRING
       { TyString }
+  | LBRACKET recordTY
+      { TyRecord $2 }
+
+recordTY:
+   | RBRACKET { [] }
+   | STRINGV COLON ty RBRACKET { [($1,$3)] }
+   | STRINGV COLON ty COMMA recordTY { (($1,$3)::($5)) }

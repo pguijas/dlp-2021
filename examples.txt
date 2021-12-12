@@ -72,3 +72,12 @@ expr = (lambda x: Nat * Bool . x.2) {1, (lambda y : Bool. y) true};;
         {1 , true}.2 : (falta meter el tipo)
         true : (falta meter el tipo)
 - : Bool = true
+
+
+Records
+a=false;;
+pairaizer = L x:Nat. {x,x};;
+reg = {lol=pairaizer 3, xd=pairaizer (succ 3), wtf=a};;
+reg.xd;;
+id_reg = L x:{lol:(Nat * Nat), xd:(Nat * Nat), wtf:Bool}. x;;
+id_reg reg;;
