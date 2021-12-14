@@ -1,7 +1,6 @@
 
 open Parsing;;
 open Lexing;;
-
 open Lambda;;
 open Parser;;
 open Lexer;;
@@ -11,28 +10,25 @@ let usage_msg = "top [--debug]"
 let debug = ref false
 let input_files = ref []
 let output_file = ref ""
-let anon_fun filename =
-       input_files := filename::!input_files
+let anon_fun filename = input_files := filename::!input_files
 let speclist = [("--debug", Arg.Set debug, "Output debug information"); ("-d", Arg.Set debug, "Output debug information")]
 
 exception Not_Ending;;
 
-(* Esta funcion tragará hasta ;; *)
-let rec check_exp l p = match l with
-  | ""::[]    -> raise (Not_Ending) (* when the expresion ends with ; (not ;;)*)
-  | []        -> raise (Not_Ending)
-  | ""::t     -> List.rev p
-  | h::t      -> check_exp t (h::p)
-;;
-
+(* will not stop until receiving ;; *)
 let rec get_exp s = 
-  try 
+  let rec check_exp l p = match l with
+    | ""::[]    -> raise (Not_Ending) (* when the expresion ends with ; (not with ;;)*)
+    | []        -> raise (Not_Ending)
+    | ""::t     -> List.rev p
+    | h::t      -> check_exp t (h::p)
+  in try 
     check_exp (String.split_on_char ';' s) []
   with 
     Not_Ending -> get_exp (s^" "^(read_line ()))
 ;;
 
-(* Tokenizing and evaluating a list of expresions... (redactar molon) *)
+(* Tokenizing and evaluating a list of expresions (strings) *)
 let rec exec exp ctx = match exp with
   | [] -> ctx
   | h::t -> 
@@ -46,15 +42,14 @@ let rec exec exp ctx = match exp with
               exec t (addbinding ctx name (typeof ctx tm) (tm_eval)) 
 ;;
 
-(*Dado un input, lo parsea, lo evalua y printa su resultado*)
+(* Reading, parsing and evaluating *)
 let top_level_loop () =
   print_endline "Evaluator of lambda expressions...";
   let rec loop ctx =
     print_string ">> ";
     flush stdout;
     try
-      (* De momento el contexto no lo tocamos, en caunto se pueda actualizar ojocuidao -> vamos a tener que ir actualizandolo x instuccion *)
-      (* Ya puedo explicarlo bien que si no no se entiende un pijo *)
+      (* Executing and updating context *)
       loop (exec (get_exp (read_line ())) ctx);
     with
        Lexical_error ->
@@ -72,6 +67,7 @@ let top_level_loop () =
     loop emptyctx
   ;;
 
+(* Program Init *)
 Arg.parse speclist anon_fun usage_msg;
 top_level_loop ()
 ;;

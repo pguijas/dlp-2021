@@ -5,6 +5,16 @@
     -revisar que los tipos rtdos sean coherentes y reitruducibles
     -atomicTy TPAIR atomicTy esto esta bien? 
 
+>> caca=1;;
+val caca : Nat = 1
+>> caca
+;;
+	1
+- : Nat = 1
+>> cacac;;
+Fatal error: exception Lambda.Not_Found
+
+esto es normal?
   
 *)
 
