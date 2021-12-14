@@ -39,6 +39,7 @@ TODO
 * Revisar que todos los types funcionen con unas funcionces lambda
 * Debuguear todo el subtipado
 * Tratar de explicar los paréntesis -> cuando debe haberlos
+* pedro busca RECOMMENT en el código para revisar los comentarios de los que no estaba seguro
 
 MEMORIA
 

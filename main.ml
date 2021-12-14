@@ -23,11 +23,13 @@ let rec get_exp s =
   let rec check_exp l p = match l with
     | ""::[]    -> raise (Not_Ending) (* when the expresion ends with ; (not with ;;)*)
     | []        -> raise (Not_Ending)
+    (* RECOMMENT ;;, finished parsing *)
     | ""::t     -> List.rev p
     | h::t      -> check_exp t (h::p)
   in try 
     check_exp (String.split_on_char ';' s) []
   with 
+    (* getting next line introduced *)
     Not_Ending -> get_exp (s^" "^(read_line ()))
 ;;
 

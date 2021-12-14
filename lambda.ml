@@ -184,16 +184,20 @@ let addbinding_type ctx x ty =
   (x, ty, None) :: ctx
 ;;
 
-(* Gets binding to a given context *)
 exception Not_Found of string;;
 
+(* Gets binding to a given context *)
+
 let rec getbinding_type ctx x = match ctx with
+  (* When going through the list, if the variable searched for is found, it's type its returned *)
   ((a,ty,_)::t) -> if x=a then ty else getbinding_type t x
   |[] -> raise (Not_Found x)
 ;;
 
 let rec getbinding_term ctx x = match ctx with
+  (* if the variable is found, it's term its returned *)
   ((a,_,Some(term))::t) -> if x=a then term else getbinding_term t x
+  (* RECOMMENT *)
   |((a,_,None)::t) -> getbinding_term t x
   |[] -> raise (Not_Found x)
 ;;
@@ -302,6 +306,9 @@ let rec typeof ctx tm = match tm with
       let tyT1 = typeof ctx t1 in
       (match tyT1 with
         TyArr (tyT11,tyT12) ->
+        (* esto ahora no tendria que ser asi
+          if (subtypeof tyT11 tyT12) then tyT11
+         *)
           if tyT11 = tyT12 then tyT12
           else raise (Type_error "result of body not compatible wirh domain")
         | _ -> raise (Type_error "arrow type excepted")
