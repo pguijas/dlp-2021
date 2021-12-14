@@ -20,12 +20,9 @@ Opcionales:
 
 DUDAS:
 
-* hector dijo que estaba algo mal de la gramatica con el concat
-* el casque de resistros y out of bounds casca en el eval no??
-* añadi una regla, las projs pueden ser: | atomicTerm DOT INTV ,| atomicTerm DOT STRINGV -> el control de que se escapa (2> tuplas) lo hacemos en tiempo de tipado, esta bien?
-* que pasa con claves repetidas?
-* estoy haciendo de forma elegante la gramatica de registros? -> y esta en buen sitio (funcionar funciona), lo puse en atomicTy y atomicTerm!
-* let idr = lambda r:{}. r in idr {x=0, y=1};; -> nos da bien el tipo pero
+* hector dijo que estaba algo mal de la gramatica con el concat -> LO PASAMOS A PARES Y LISTO
+* que pasa con claves repetidas? -> no hay problema comprobamos
+* creo el tipo de dato top?
 
 Datos:
 
@@ -41,6 +38,7 @@ TODO
 * Mirar de cambiar todos los letrecs de TmREcord por 2 reglas en el pattern matching principal
 * Revisar que todos los types funcionen con unas funcionces lambda
 * Debuguear todo el subtipado
+* Tratar de explicar los paréntesis -> cuando debe haberlos
 
 MEMORIA
 

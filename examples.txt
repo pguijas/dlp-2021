@@ -81,6 +81,8 @@ reg = {lol=pairaizer 3, xd=pairaizer (succ 3), wtf=a};;
 reg.xd;;
 id_reg = L x:{lol:(Nat * Nat), xd:(Nat * Nat), wtf:Bool}. x;;
 id_reg reg;;
+(L x:Nat .{lol=x, xd=x}) 3;;
+
 
 Subtyping
 
@@ -90,3 +92,4 @@ let idr = lambda r:{}. r in idr {x=0, y=1};;
 a = {x=1, y=1, z={x=1}};;
 b = {x=1, y=1, z=a};;
 (lambda r:{z:{x:Nat}}. (r.z).x) b;; (mejorar prints xq no se respeta sacando los parentesis en la evaluación)
+(lambda r:{z:{x:Nat}}. (r.z).x) a;;
