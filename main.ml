@@ -5,12 +5,15 @@ open Lambda;;
 open Parser;;
 open Lexer;;
 
-
+(* error mesaje of a bad parameter *)
 let usage_msg = "top [--debug]"
+(* auxlar variable to allow debugging *)
 let debug = ref false
+(* we will not use this *)
 let input_files = ref []
 let output_file = ref ""
 let anon_fun filename = input_files := filename::!input_files
+(* arguments that we might expect *)
 let speclist = [("--debug", Arg.Set debug, "Output debug information"); ("-d", Arg.Set debug, "Output debug information")]
 
 exception Not_Ending;;
