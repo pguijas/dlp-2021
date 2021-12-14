@@ -15,6 +15,13 @@ val caca : Nat = 1
 Fatal error: exception Lambda.Not_Found
 
 esto es normal?
+
+Evaluator of lambda expressions...
+>> a;;
+variable 'a' has no binding type.
+>> 
+
+¿que te parece así? así no sale del intérprete si ponemos una variable que no existe
   
 *)
 
@@ -80,35 +87,6 @@ type context =
 
 exception Type_error of string;;
 
-(*******************************CONTEXT MANAGEMENT*******************************)
-
-(* Creates an empty context *)
-let emptyctx =
-  []
-;;
-
-(* Adds binding to a given context *)
-let addbinding ctx x ty te =
-  (x, ty, Some(te)) :: ctx
-;;
-
-let addbinding_type ctx x ty =
-  (x, ty, None) :: ctx
-;;
-
-(* Gets binding to a given context *)
-exception Not_Found;;
-
-let rec getbinding_type ctx x = match ctx with
-  ((a,ty,_)::t) -> if x=a then ty else getbinding_type t x
-  |[] -> raise Not_Found
-;;
-
-let rec getbinding_term ctx x = match ctx with
-  ((a,_,Some(term))::t) -> if x=a then term else getbinding_term t x
-  |((a,_,None)::t) -> getbinding_term t x
-  |[] -> raise Not_Found
-;;
 
 (******************************* Printing *******************************)
 
@@ -190,6 +168,35 @@ let rec string_of_term = function
       in "{" ^ (print tml) ^ "}"  
 ;;
 
+(*******************************CONTEXT MANAGEMENT*******************************)
+
+(* Creates an empty context *)
+let emptyctx =
+  []
+;;
+
+(* Adds binding to a given context *)
+let addbinding ctx x ty te =
+  (x, ty, Some(te)) :: ctx
+;;
+
+let addbinding_type ctx x ty =
+  (x, ty, None) :: ctx
+;;
+
+(* Gets binding to a given context *)
+exception Not_Found of string;;
+
+let rec getbinding_type ctx x = match ctx with
+  ((a,ty,_)::t) -> if x=a then ty else getbinding_type t x
+  |[] -> raise (Not_Found x)
+;;
+
+let rec getbinding_term ctx x = match ctx with
+  ((a,_,Some(term))::t) -> if x=a then term else getbinding_term t x
+  |((a,_,None)::t) -> getbinding_term t x
+  |[] -> raise (Not_Found x)
+;;
 
 (*******************************TYPE MANAGEMENT (TYPING)*******************************)
 
