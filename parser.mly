@@ -83,7 +83,7 @@ appTerm :
       { TmProj ($1, (string_of_int $3))}
   | atomicTerm DOT STRINGV
       { TmProj ($1, $3)}
-  | appTerm UP atomicTerm
+  | atomicTerm UP atomicTerm
       { TmConcat ($1, $3)}
   | NIL LCORCHETE ty RCORCHETE
       { TmNil $3 }
