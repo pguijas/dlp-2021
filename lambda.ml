@@ -618,8 +618,7 @@ let rec eval1 ctx tm = match tm with
       TmProj ((eval1 ctx t), n)
 
   | TmVar x ->  
-      (try getbinding_term ctx x with
-      _ -> raise (Type_error ("no binding term for variable " ^ x)))
+      getbinding_term ctx x (* Not necesary to handling error because typeof aldready did it *)
       
   (* E-Concat *) 
   | TmConcat (TmString(s1),TmString(s2)) ->  
@@ -697,8 +696,7 @@ let rec subs_ctx ctx tm vl = match tm with
     if List.mem x vl then
       tm
     else
-      (try getbinding_term ctx x with
-      _ -> raise (Type_error ("no binding term for variable " ^ x)))
+      getbinding_term ctx x (* Not necesary to handling error because typeof aldready did it *)
   | TmAbs (y, tyY, t) -> TmAbs (y, tyY, subs_ctx ctx t (y::vl))
   | TmApp (t1, t2) -> TmApp (subs_ctx ctx t1 vl, subs_ctx ctx t2 vl)
   | TmLetIn (y, t1, t2) -> TmLetIn (y, subs_ctx ctx t1 vl, subs_ctx ctx t2 (y::vl))
