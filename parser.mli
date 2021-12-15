@@ -1,0 +1,43 @@
+type token =
+  | LAMBDA
+  | TRUE
+  | FALSE
+  | IF
+  | THEN
+  | ELSE
+  | SUCC
+  | PRED
+  | ISZERO
+  | LET
+  | LETREC
+  | IN
+  | BOOL
+  | NAT
+  | TPAIR
+  | LIST
+  | STRING
+  | LPAREN
+  | RPAREN
+  | DOT
+  | EQ
+  | COLON
+  | ARROW
+  | UP
+  | LBRACKET
+  | COMMA
+  | RBRACKET
+  | RCORCHETE
+  | LCORCHETE
+  | NIL
+  | CONS
+  | ISNIL
+  | HEAD
+  | TAIL
+  | QUOTE
+  | EOF
+  | INTV of (int)
+  | STRINGV of (string)
+  | STRINGT of (string)
+
+val s :
+  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Lambda.command

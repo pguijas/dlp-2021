@@ -47,11 +47,6 @@ in len lista;;
 
 lst = cons[Nat] 1 (cons[Nat] 2 (cons[Nat] 3 (cons[Nat] 4 (nil[Nat]))));;
 
-letrec len : (Nat list) -> Nat =
-lambda lst: Nat list . if (isnil[Nat] lst) then 0 else succ (len (tail[Nat] lst))
-in len lst;;
-
-lst = cons[Nat] 1 (cons[Nat] 2 (cons[Nat] 3 (cons[Nat] 4 (nil[Nat]))));;
 f = lambda x:Nat . succ x;;
 
 letrec map : (Nat list) -> (Nat -> Nat) -> Nat list =

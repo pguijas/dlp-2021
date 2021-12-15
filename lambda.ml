@@ -187,17 +187,13 @@ let addbinding_type ctx x ty =
 exception Not_Found of string;;
 
 (* Gets binding to a given context *)
-
 let rec getbinding_type ctx x = match ctx with
-  (* When going through the list, if the variable searched for is found, it's type its returned *)
   ((a,ty,_)::t) -> if x=a then ty else getbinding_type t x
   |[] -> raise (Not_Found x)
 ;;
 
 let rec getbinding_term ctx x = match ctx with
-  (* if the variable is found, it's term its returned *)
   ((a,_,Some(term))::t) -> if x=a then term else getbinding_term t x
-  (* RECOMMENT *)
   |((a,_,None)::t) -> getbinding_term t x
   |[] -> raise (Not_Found x)
 ;;
@@ -306,9 +302,6 @@ let rec typeof ctx tm = match tm with
       let tyT1 = typeof ctx t1 in
       (match tyT1 with
         TyArr (tyT11,tyT12) ->
-        (* esto ahora no tendria que ser asi
-          if (subtypeof tyT11 tyT12) then tyT11
-         *)
           if tyT11 = tyT12 then tyT12
           else raise (Type_error "result of body not compatible wirh domain")
         | _ -> raise (Type_error "arrow type excepted")
@@ -625,8 +618,9 @@ let rec eval1 ctx tm = match tm with
       TmProj ((eval1 ctx t), n)
 
   | TmVar x ->  
-      getbinding_term ctx x (* Not necesary to handling error because typeof aldready did it *)
-
+      (try getbinding_term ctx x with
+      _ -> raise (Type_error ("no binding term for variable " ^ x)))
+      
   (* E-Concat *) 
   | TmConcat (TmString(s1),TmString(s2)) ->  
       TmString(s1^s2)
@@ -703,7 +697,8 @@ let rec subs_ctx ctx tm vl = match tm with
     if List.mem x vl then
       tm
     else
-      getbinding_term ctx x (* Not necesary to handling error because typeof aldready did it *)
+      (try getbinding_term ctx x with
+      _ -> raise (Type_error ("no binding term for variable " ^ x)))
   | TmAbs (y, tyY, t) -> TmAbs (y, tyY, subs_ctx ctx t (y::vl))
   | TmApp (t1, t2) -> TmApp (subs_ctx ctx t1 vl, subs_ctx ctx t2 vl)
   | TmLetIn (y, t1, t2) -> TmLetIn (y, subs_ctx ctx t1 vl, subs_ctx ctx t2 (y::vl))

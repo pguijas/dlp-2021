@@ -1,4 +1,3 @@
-
 open Parsing;;
 open Lexing;;
 open Lambda;;
@@ -23,7 +22,6 @@ let rec get_exp s =
   let rec check_exp l p = match l with
     | ""::[]    -> raise (Not_Ending) (* when the expresion ends with ; (not with ;;)*)
     | []        -> raise (Not_Ending)
-    (* RECOMMENT ;;, finished parsing *)
     | ""::t     -> List.rev p
     | h::t      -> check_exp t (h::p)
   in try 
@@ -65,9 +63,6 @@ let top_level_loop () =
          loop ctx
      | Type_error e ->
          print_endline ("type error: " ^ e);
-         loop ctx
-     | Not_Found var ->
-         print_endline ("variable '" ^ var ^ "' has no binding type.");
          loop ctx
      | End_of_file ->
          print_endline "...bye!!!"
