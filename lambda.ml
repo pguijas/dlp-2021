@@ -1,31 +1,3 @@
-(* 
-  Traducir todo caballeros.
-
-  Dudas:
-    -revisar que los tipos rtdos sean coherentes y reitruducibles
-    -atomicTy TPAIR atomicTy esto esta bien? 
-
->> caca=1;;
-val caca : Nat = 1
->> caca
-;;
-	1
-- : Nat = 1
->> cacac;;
-Fatal error: exception Lambda.Not_Found
-
-esto es normal?
-
-Evaluator of lambda expressions...
->> a;;
-variable 'a' has no binding type.
->> 
-
-¿que te parece así? así no sale del intérprete si ponemos una variable que no existe
-  
-*)
-
-
 (***********************************TYPES***********************************)
 
 (* Base Types *)
@@ -214,10 +186,6 @@ let rec subtypeof tm1 tm2 = match (tm1,tm2) with
       | []     -> true
       | (h::t) -> (&&) (seach_and_check h l2)  (contains t l2)
     in contains l1 l2
-
-  (* S-Top 
-  | (TmTop,_) -> true
-  *)
   (* S-Refl *)
   | (tm1,tm2) -> tm1=tm2
 ;;
@@ -682,6 +650,7 @@ let rec eval1 ctx tm = match tm with
       raise NoRuleApplies
 ;;
 
+(* replace any free variables that may have remained *)
 let rec subs_ctx ctx tm vl = match tm with
   | TmTrue -> TmTrue
   | TmFalse -> TmFalse

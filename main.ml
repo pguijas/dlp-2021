@@ -43,10 +43,11 @@ let rec exec exp ctx = match exp with
         | Bind (name,tm) -> 
             let ty = (string_of_ty (typeof ctx tm)) and tm_eval = eval ctx tm (!debug) in
               print_endline ("val " ^ name ^ " : " ^ ty ^ " = " ^ string_of_term (tm_eval) );
+              (* Updating Context *)
               exec t (addbinding ctx name (typeof ctx tm) (tm_eval)) 
 ;;
 
-(* Reading, parsing and evaluating *)
+(* Reading, parsing, evaluating and recursion*)
 let top_level_loop () =
   print_endline "Evaluator of lambda expressions...";
   let rec loop ctx =
