@@ -5,7 +5,7 @@ open Parser;;
 open Lexer;;
 
 (* error mesaje of a bad parameter *)
-let usage_msg = "top [--debug]"
+let usage_msg = "top [-d|--debug]"
 (* auxlar variable to allow debugging *)
 let debug = ref false
 (* we will not use this *)
@@ -19,6 +19,7 @@ exception Not_Ending;;
 
 (* will not stop until receiving ;; *)
 let rec get_exp s = 
+  (* Split is gonna divide our string by the ;. So we want to look an empty string which means ;; or ;(end of string) *)
   let rec check_exp l p = match l with
     | ""::[]    -> raise (Not_Ending) (* when the expresion ends with ; (not with ;;)*)
     | []        -> raise (Not_Ending)
@@ -54,7 +55,7 @@ let top_level_loop () =
     print_string ">> ";
     flush stdout;
     try
-      (* Executing and updating context *)
+      (* Getting text over Stdin, Executing, Updating context and Recursion *)
       loop (exec (get_exp (read_line ())) ctx);
     with
        Lexical_error ->
@@ -76,4 +77,3 @@ let top_level_loop () =
 Arg.parse speclist anon_fun usage_msg;
 top_level_loop ()
 ;;
-

@@ -1,24 +1,18 @@
 true;;
 let x = true in x;;
-if false then true else false
-0
-succ (succ (succ 0))
-3
-succ (pred 0)
-iszero (pred (succ (succ 0)))
-if iszero 3 then 0 else 1
-iszero true
-if 1 then true else false
-if iszero 3 then 0 else false
+if false then true else false;;
+0;;
+succ (succ (succ 0));;
+3;;
+succ (pred 0);;
+iszero (pred (succ (succ 0)));;
+if iszero 3 then 0 else 1;;
 let id = Lx: Nat .x in id 3;;
-let id_bool = L x:Bool. x in id_bool true
+let id_bool = L x:Bool. x in id_bool true;;
 id_nat = L x:Nat. x;;
 let id_nat = L x:Nat. x in id_nat 5;;
-let x = 5 in let id_nat = L x:Nat. x in id_nat x
-let fix = lambda f.(lambda x. f (lambda y. x x y)) (lambda x. f (lambda y. x x y)) in let sumaux = lambda f. (lambda n. (lambda m. if (iszero n) then m else succ (f (pred n) m))) in let sum = fix sumaux in sum 21 34
-let fix = lambda f.(lambda x. f (lambda y. x x y)) (lambda x. f (lambda y. x x y)) in let sumaux = lambda f. (lambda n. (lambda m. if (iszero n) then m else succ (f (pred n) m))) in let sum = fix sumaux in let prodaux = lambda f. (lambda n. (lambda m. if (iszero (pred n)) then m else sum (f (pred n) m) m)) in let prod = fix prodaux in prod 12 5
+let x = 5 in let id_nat = L x:Nat. x in id_nat x;;
 
-Pares y proyecciones de pares:
 {(L x:Bool .x), true};;
 {(L x:Bool .x)false, true};;
 {(L x:Bool .x)false, (L x:Bool .x)true}.1;;
@@ -27,28 +21,23 @@ Pares y proyecciones de pares:
 a = (L x: Nat*Bool .x){succ(succ(0)), iszero(succ(0))};;
 a.1;;
 (L x:Bool .x) ({true, false}.1);;
-
 id_pair = L x:Nat*Nat. x;;
 (id_pair {1,2}).1;;
 
-
-Strings:
-a = "pedro huele a caca";;
+"Strings";;
+a = "hola graña, espero que no te aburras";;
 str_id = (L x:String .x);;
 (str_id a)^(str_id a);;
 
-Listas:
+"Listas";;
 nil[Nat];;
 id = L x:Nat. x;;
 a=1;;
 lista = (cons[Nat] (id 1) (cons[Nat] (id 2) (cons[Nat] (id a) (nil[Nat]))));;
 letrec len : (Nat list) -> Nat = lambda l : Nat list. if (isnil[Nat] l) then 0 else (succ (len (tail[Nat] l)))
 in len lista;;
-
 lst = cons[Nat] 1 (cons[Nat] 2 (cons[Nat] 3 (cons[Nat] 4 (nil[Nat]))));;
-
 f = lambda x:Nat . succ x;;
-
 letrec map : (Nat list) -> (Nat -> Nat) -> Nat list =
 lambda lst: Nat list. lambda f: (Nat -> Nat). 
         if (isnil[Nat] (tail[Nat] lst)) then
@@ -57,14 +46,14 @@ lambda lst: Nat list. lambda f: (Nat -> Nat).
                 cons[Nat] (f (head[Nat] lst)) (map (tail[Nat] lst) f)
 in map lst f;;
 
-Multiplicacion:
+"Fix";;
+"Multiplicacion";;
 letrec sum : Nat -> Nat -> Nat =                                      
 lambda n : Nat. lambda m : Nat. if iszero n then m else succ (sum (pred n) m) in
 letrec mult : Nat -> Nat -> Nat =
 lambda n : Nat. lambda m : Nat. if iszero n then 0 else sum (mult (pred n) m) m in
 mult 2 3;;
-
-Fibonacci:
+"Fibonacci:";;
 letrec sum : Nat -> Nat -> Nat =                                      
         lambda n : Nat. lambda m : Nat. if iszero n then m else succ (sum (pred n) m) in
         letrec fib : Nat -> Nat =
@@ -73,20 +62,7 @@ letrec sum : Nat -> Nat -> Nat =
                 in fib 4;;
 
 
-test debug:
-expr = (lambda x: Nat * Bool . x.2) {1, (lambda y : Bool. y) true};;
-./top.out
->> expr;;
-- : Bool = true
-./top.out [-d | --debug]
->> expr;;
-        ((lambda x:(Nat * Bool). x.2) {1 , true}) : (falta meter el tipo)
-        {1 , true}.2 : (falta meter el tipo)
-        true : (falta meter el tipo)
-- : Bool = true
-
-
-Records
+"Records:";;
 a=false;;
 pairaizer = L x:Nat. {x,x};;
 reg = {lol=pairaizer 3, xd=pairaizer (succ 3), wtf=a};;
@@ -95,12 +71,9 @@ id_reg = L x:{lol:(Nat * Nat), xd:(Nat * Nat), wtf:Bool}. x;;
 id_reg reg;;
 (L x:Nat .{lol=x, xd=x}) 3;;
 
-
-Subtyping
-
+"Subtyping:";;
 let idr = lambda r:{}. r in idr {x=0, y=1};;
 (lambda r:{x:Nat}. r.x) {x=0, y=1};;
-
 a = {x=1, y=1, z={x=1}};;
 b = {x=1, y=1, z=a};;
 (lambda r:{z:{x:Nat}}. (r.z).x) b;; (mejorar prints xq no se respeta sacando los parentesis en la evaluación)
